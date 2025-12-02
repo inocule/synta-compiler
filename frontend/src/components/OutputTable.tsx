@@ -11,16 +11,15 @@ export default function OutputTable({ tokens }: { tokens: TokenDTO[] }) {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.02)', fontWeight: 600 }}>Tokens</div>
+      <div style={{ padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.02)', fontWeight: 600 }}>Editor Reader</div>
       <div style={{ flex: 1, overflow: 'auto' }}>
         <table>
           <thead>
             <tr>
               <th>Lexeme</th>
-              <th>Type</th>
+              <th>Token</th>
               <th>Line</th>
-              <th>Col</th>
-              <th>Value</th>
+              <th>Value (chars)</th>
             </tr>
           </thead>
           <tbody>
@@ -29,8 +28,7 @@ export default function OutputTable({ tokens }: { tokens: TokenDTO[] }) {
                 <td>{t.lexeme}</td>
                 <td>{t.type}</td>
                 <td>{t.line}</td>
-                <td>{t.column}</td>
-                <td>{t.value ?? ''}</td>
+                <td>{(t.lexeme ?? '').length}</td>
               </tr>
             ))}
           </tbody>
