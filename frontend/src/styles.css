@@ -18,11 +18,59 @@ body {
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* ===== Design Tokens - Synta Theme ===== */
+/* ===== Design Tokens - Light Theme (Default) ===== */
 :root {
-  /* Base Colors - Dark Maroon/Red Theme */
+  /* Light Maroon/Red Theme - Darker */
+  --bg: #f5e6e8;              /* darker pink/cream */
+  --panel: #f8eff0;           /* light pink with more saturation */
+  --panel-secondary: #fdf7f8; /* off-white with pink tint */
+  --muted: #7a5a5e;           /* darker muted brownish pink */
+  --accent: #8b1a1a;          /* deep red accent */
+  --accent-hover: #a52020;    /* brighter red hover */
+  --accent-light: #f5d6d9;    /* medium light pink */
+  --accent-bright: #6d1515;   /* darker red for text */
+  --surface-2: #f0dfe1;       /* darker surface */
+  --border: #d4b8bc;          /* darker pink border */
+  --border-hover: #c09ca1;    /* even darker border */
+  --table-header: #f5e6e8;    /* table header darker pink */
+  --text: #2d1418;            /* very dark maroon text */
+  --text-secondary: #5a3438;  /* darker secondary text */
+  --error: #dc2626;           /* bright red error */
+  --success: #059669;         /* teal success */
+  --warning: #d97706;         /* orange warning */
+  --red-gradient-start: #8b1a1a; /* deep red */
+  --red-gradient-end: #d32f2f;   /* bright red */
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(139, 26, 26, 0.1);
+  --shadow-md: 0 4px 12px rgba(139, 26, 26, 0.12);
+  --shadow-lg: 0 10px 30px rgba(139, 26, 26, 0.15);
+  --shadow-inner: inset 0 2px 4px rgba(139, 26, 26, 0.06);
+  --shadow-red: 0 4px 20px rgba(211, 47, 47, 0.25);
+  
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== Dark Theme Override ===== */
+[data-theme="dark"] {
+  /* Dark Maroon/Red Theme */
   --bg: #1a0a0d;              /* very dark maroon/black */
   --panel: #2d1418;           /* dark maroon panel */
   --panel-secondary: #3d1d24; /* slightly lighter maroon */
@@ -43,28 +91,11 @@ body {
   --red-gradient-start: #8b1a1a; /* deep red */
   --red-gradient-end: #d32f2f;   /* bright red */
   
-  /* Spacing */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 12px;
-  --spacing-lg: 16px;
-  --spacing-xl: 24px;
-  
-  /* Radii */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  
-  /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
   --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.2);
   --shadow-red: 0 4px 20px rgba(211, 47, 47, 0.4);
-  
-  /* Transitions */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ===== Base Styles ===== */
@@ -129,12 +160,71 @@ body {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: left center;
+  filter: drop-shadow(0 4px 8px rgba(139, 26, 26, 0.3));
+}
+
+[data-theme="dark"] .app-grid::before {
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 
 /* Adjust grid to account for header */
 .app-grid {
   padding-top: calc(var(--spacing-xl) + 80px);
+}
+
+/* ===== Theme Toggle Button ===== */
+.theme-toggle {
+  position: fixed;
+  top: calc(var(--spacing-xl) + 25px);
+  right: var(--spacing-xl);
+  z-index: 100;
+  background: var(--border);
+  border: 2px solid var(--border-hover);
+  width: 64px;
+  height: 32px;
+  border-radius: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+}
+
+.theme-toggle:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent);
+}
+
+.theme-toggle-slider {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--panel);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all var(--transition-base);
+  position: absolute;
+  left: 3px;
+  color: var(--text);
+  font-weight: bold;
+}
+
+[data-theme="light"] .theme-toggle-slider {
+  transform: translateX(0);
+}
+
+[data-theme="dark"] .theme-toggle-slider {
+  transform: translateX(32px);
+  background: var(--panel-secondary);
+}
+
+[data-theme="dark"] .theme-toggle {
+  background: var(--border-hover);
+  border-color: var(--accent);
 }
 
 /* ===== Toolbar ===== */
@@ -144,13 +234,17 @@ body {
   gap: var(--spacing-sm); 
   align-items: center; 
   border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--surface-2), var(--panel));
+}
+
+[data-theme="dark"] .toolbar {
   background: linear-gradient(180deg, var(--panel-secondary), var(--panel));
 }
 
 .toolbar button { 
   background: linear-gradient(135deg, var(--red-gradient-start), var(--red-gradient-end)); 
   border: none;
-  color: var(--accent-bright); 
+  color: #ffffff; 
   padding: 8px 20px; 
   border-radius: var(--radius-md); 
   cursor: pointer;
@@ -160,6 +254,11 @@ body {
   box-shadow: var(--shadow-sm);
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .toolbar button {
+  color: var(--accent-bright);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
@@ -182,9 +281,14 @@ body {
   color: var(--error); 
   font-size: 0.875rem;
   font-weight: 600;
-  background: rgba(255, 107, 107, 0.12);
+  background: rgba(220, 38, 38, 0.1);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+}
+
+[data-theme="dark"] .toolbar .err {
+  background: rgba(255, 107, 107, 0.12);
   border: 1px solid rgba(255, 107, 107, 0.3);
 }
 
@@ -195,6 +299,10 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--surface-2);
   background: var(--panel-secondary);
+}
+
+[data-theme="dark"] .editorContainer {
+  background: #916169;
 }
 
 .outputContainer { 
@@ -249,6 +357,11 @@ thead th {
   letter-spacing: 0.1em;
   border-bottom: 2px solid var(--red-gradient-end);
   z-index: 10;
+  box-shadow: 0 2px 8px rgba(139, 26, 26, 0.1);
+}
+
+[data-theme="dark"] thead th {
+  color: var(--accent-bright);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -262,6 +375,10 @@ tbody td {
 
 tbody tr { 
   transition: all var(--transition-fast);
+  background: var(--panel-secondary);
+}
+
+[data-theme="dark"] tbody tr {
   background: var(--panel);
 }
 
@@ -274,40 +391,74 @@ tbody tr:hover td {
   color: var(--text);
 }
 
-/* ===== Token Decorations ===== */
+/* ===== Token Decorations - Light Theme ===== */
 .tok-keyword { 
-  color: #ff6b9d !important; 
+  color: #b8391a !important; 
   font-weight: 700 !important; 
 }
 
 .tok-identifier { 
-  color: #9db4c0 !important; 
+  color: #1e6b8c !important; 
 }
 
 .tok-string { 
-  color: #7dd3c0 !important; 
+  color: #15803d !important; 
 }
 
 .tok-number { 
-  color: #d4a7ff !important; 
+  color: #a21caf !important; 
   font-weight: 500 !important;
 }
 
 .tok-comment { 
-  color: #6d5a5e !important; 
+  color: #9ca3af !important; 
   font-style: italic !important; 
 }
 
 .tok-operator { 
-  color: #ffd93d !important; 
+  color: #ca8a04 !important; 
   font-weight: 600 !important;
 }
 
 .tok-illegal { 
-  background: rgba(255, 107, 107, 0.2) !important; 
-  color: #ff6b6b !important;
+  background: rgba(220, 38, 38, 0.15) !important; 
+  color: #dc2626 !important;
   text-decoration: wavy underline;
   text-decoration-color: var(--error);
+}
+
+/* ===== Token Decorations - Dark Theme ===== */
+[data-theme="dark"] .tok-keyword { 
+  color: #ff6b9d !important; 
+  font-weight: 700 !important; 
+}
+
+[data-theme="dark"] .tok-identifier { 
+  color: #9db4c0 !important; 
+}
+
+[data-theme="dark"] .tok-string { 
+  color: #7dd3c0 !important; 
+}
+
+[data-theme="dark"] .tok-number { 
+  color: #d4a7ff !important; 
+  font-weight: 500 !important;
+}
+
+[data-theme="dark"] .tok-comment { 
+  color: #6d5a5e !important; 
+  font-style: italic !important; 
+}
+
+[data-theme="dark"] .tok-operator { 
+  color: #ffd93d !important; 
+  font-weight: 600 !important;
+}
+
+[data-theme="dark"] .tok-illegal { 
+  background: rgba(255, 107, 107, 0.2) !important; 
+  color: #ff6b6b !important;
 }
 
 /* ===== Utility Classes ===== */
@@ -367,27 +518,40 @@ button, tr, td, th {
   transition: all var(--transition-fast);
 }
 
-/* Add subtle gradient pattern to background */
+/* Add subtle gradient pattern to background - Light Theme */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   background: 
-    radial-gradient(circle at 20% 50%, rgba(139, 26, 26, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(211, 47, 47, 0.1) 0%, transparent 50%);
+    radial-gradient(circle at 20% 50%, rgba(139, 26, 26, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(211, 47, 47, 0.02) 0%, transparent 50%);
   pointer-events: none;
   z-index: -1;
 }
 
-/* Subtle grid pattern */
+/* Subtle grid pattern - Light Theme */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   background-image: 
-    linear-gradient(rgba(211, 47, 47, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(211, 47, 47, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(139, 26, 26, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 26, 26, 0.02) 1px, transparent 1px);
   background-size: 50px 50px;
   pointer-events: none;
   z-index: -1;
+}
+
+/* Dark theme background patterns */
+[data-theme="dark"] body::before {
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(139, 26, 26, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(211, 47, 47, 0.1) 0%, transparent 50%);
+}
+
+[data-theme="dark"] body::after {
+  background-image: 
+    linear-gradient(rgba(211, 47, 47, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(211, 47, 47, 0.03) 1px, transparent 1px);
 }
