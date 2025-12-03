@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 .root, html, body { height: 100%; }
 html, body { margin: 0; padding: 0; }
 body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
@@ -18,25 +20,28 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== Design Tokens - Reversed Maroon Theme ===== */
+/* ===== Design Tokens - Synta Theme ===== */
 :root {
-  /* Base Colors - Reversed Warm Palette */
-  --bg: #2d1f23;              /* was light background -> dark */
-  --panel: #1a1a1a;           /* panels now dark */
-  --panel-secondary: #2c2c2c; /* secondary panel dark */
-  --muted: #d7c2c2;           /* muted text lighter */
-  --accent: #f0c0c5;          /* accent now light maroon/pinkish */
-  --accent-hover: #e6a0a5;    /* hover lighter */
-  --accent-light: #4d2b32;    /* light accent becomes dark */
-  --surface-2: #0f0f0f;       /* surface darker */
-  --border: #33292b;           /* borders dark */
-  --border-hover: #4a3a3d;     /* hover border lighter */
-  --table-header: #2c2c2c;     /* table header dark */
-  --text: #faf7f5;             /* text becomes light */
-  --text-secondary: #d7c2c2;   /* secondary text lighter */
-  --error: #f87171;            /* error brighter */
-  --success: #34d399;          /* success lighter */
-  --warning: #fbbf24;          /* warning lighter */
+  /* Base Colors - Dark Maroon/Red Theme */
+  --bg: #1a0a0d;              /* very dark maroon/black */
+  --panel: #2d1418;           /* dark maroon panel */
+  --panel-secondary: #3d1d24; /* slightly lighter maroon */
+  --muted: #9d8589;           /* muted pinkish gray */
+  --accent: #c4979b;          /* light silver-pink */
+  --accent-hover: #d4a7ab;    /* lighter hover */
+  --accent-light: #4d2b32;    /* dark accent */
+  --accent-bright: #e8d4d6;   /* bright silver accent */
+  --surface-2: #0f0608;       /* darkest surface */
+  --border: #4d2429;          /* maroon border */
+  --border-hover: #6d343d;    /* lighter border */
+  --table-header: #3d1d24;    /* table header dark maroon */
+  --text: #e8d4d6;            /* light silver text */
+  --text-secondary: #9d8589;  /* secondary muted text */
+  --error: #ff6b6b;           /* bright red error */
+  --success: #4ecdc4;         /* teal success */
+  --warning: #ffe66d;         /* yellow warning */
+  --red-gradient-start: #8b1a1a; /* deep red */
+  --red-gradient-end: #d32f2f;   /* bright red */
   
   /* Spacing */
   --spacing-xs: 4px;
@@ -51,10 +56,11 @@ body {
   --radius-lg: 14px;
   
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(240, 192, 197, 0.08);
-  --shadow-md: 0 4px 12px rgba(240, 192, 197, 0.1);
-  --shadow-lg: 0 10px 30px rgba(240, 192, 197, 0.15);
-  --shadow-inner: inset 0 2px 4px rgba(240, 192, 197, 0.06);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-red: 0 4px 20px rgba(211, 47, 47, 0.4);
   
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -112,24 +118,23 @@ body {
 
 /* ===== Header Title ===== */
 .app-grid::before {
-  content: 'Synta Lexical Analyzer';
+  content: '';
   position: fixed;
   top: var(--spacing-xl);
   left: var(--spacing-xl);
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: -0.02em;
+  width: 300px;
+  height: 80px;
   z-index: 100;
-  background: #f0c0c5;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background-image: url('./components/title.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: left center;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 
 /* Adjust grid to account for header */
 .app-grid {
-  padding-top: calc(var(--spacing-xl) + 60px);
+  padding-top: calc(var(--spacing-xl) + 80px);
 }
 
 /* ===== Toolbar ===== */
@@ -143,22 +148,25 @@ body {
 }
 
 .toolbar button { 
-  background: linear-gradient(135deg, var(--accent), var(--accent-hover)); 
+  background: linear-gradient(135deg, var(--red-gradient-start), var(--red-gradient-end)); 
   border: none;
-  color: #222020; 
+  color: var(--accent-bright); 
   padding: 8px 20px; 
   border-radius: var(--radius-md); 
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.875rem;
   transition: all var(--transition-fast);
   box-shadow: var(--shadow-sm);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .toolbar button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139, 41, 66, 0.3);
+  box-shadow: var(--shadow-red);
+  background: linear-gradient(135deg, var(--red-gradient-end), #e53935);
 }
 
 .toolbar button:active:not(:disabled) {
@@ -166,18 +174,18 @@ body {
 }
 
 .toolbar button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .toolbar .err { 
   color: var(--error); 
   font-size: 0.875rem;
-  font-weight: 500;
-  background: rgba(220, 38, 38, 0.08);
+  font-weight: 600;
+  background: rgba(255, 107, 107, 0.12);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(220, 38, 38, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.3);
 }
 
 /* ===== Containers ===== */
@@ -234,14 +242,14 @@ thead th {
   background: var(--table-header); 
   padding: 14px 16px; 
   text-align: left; 
-  color: var(--accent); 
+  color: var(--accent-bright); 
   font-weight: 700;
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  border-bottom: 2px solid var(--accent);
+  letter-spacing: 0.1em;
+  border-bottom: 2px solid var(--red-gradient-end);
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(139, 41, 66, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 tbody td { 
@@ -259,7 +267,7 @@ tbody tr {
 
 tbody tr:hover { 
   background: var(--accent-light);
-  transform: scale(1.005);
+  transform: scale(1.002);
 }
 
 tbody tr:hover td {
@@ -268,36 +276,36 @@ tbody tr:hover td {
 
 /* ===== Token Decorations ===== */
 .tok-keyword { 
-  color: #b8391a !important; 
+  color: #ff6b9d !important; 
   font-weight: 700 !important; 
 }
 
 .tok-identifier { 
-  color: #1e6b8c !important; 
+  color: #9db4c0 !important; 
 }
 
 .tok-string { 
-  color: #15803d !important; 
+  color: #7dd3c0 !important; 
 }
 
 .tok-number { 
-  color: #a21caf !important; 
+  color: #d4a7ff !important; 
   font-weight: 500 !important;
 }
 
 .tok-comment { 
-  color: #8b6f6f !important; 
+  color: #6d5a5e !important; 
   font-style: italic !important; 
 }
 
 .tok-operator { 
-  color: #ca8a04 !important; 
+  color: #ffd93d !important; 
   font-weight: 600 !important;
 }
 
 .tok-illegal { 
-  background: rgba(220, 38, 38, 0.15) !important; 
-  color: #dc2626 !important;
+  background: rgba(255, 107, 107, 0.2) !important; 
+  color: #ff6b6b !important;
   text-decoration: wavy underline;
   text-decoration-color: var(--error);
 }
@@ -315,7 +323,7 @@ tbody tr:hover td {
 /* ===== Focus States ===== */
 button:focus-visible,
 a:focus-visible {
-  outline: 3px solid var(--accent);
+  outline: 3px solid var(--red-gradient-end);
   outline-offset: 2px;
 }
 
@@ -337,12 +345,12 @@ a:focus-visible {
 
 /* ===== Selection ===== */
 ::selection {
-  background: var(--accent);
+  background: var(--red-gradient-end);
   color: #ffffff;
 }
 
 ::-moz-selection {
-  background: var(--accent);
+  background: var(--red-gradient-end);
   color: #ffffff;
 }
 
@@ -359,13 +367,27 @@ button, tr, td, th {
   transition: all var(--transition-fast);
 }
 
-/* Add subtle pattern to background */
+/* Add subtle gradient pattern to background */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(circle at 1px 1px, rgba(139, 41, 66, 0.03) 1px, transparent 0);
-  background-size: 40px 40px;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(139, 26, 26, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(211, 47, 47, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Subtle grid pattern */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(211, 47, 47, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(211, 47, 47, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
   pointer-events: none;
   z-index: -1;
 }

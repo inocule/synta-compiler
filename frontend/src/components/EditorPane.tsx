@@ -16,50 +16,49 @@ export default function EditorPane({ code, setCode, tokens = [], onRun }: Props)
   const decorationsRef = useRef<string[]>([])
 
   const handleMount: OnMount = (editor, monaco) => {
-  editorRef.current = editor
-  monacoRef.current = monaco
+    editorRef.current = editor
+    monacoRef.current = monaco
 
-  // Define a custom dark/reversed theme
-  try {
-    monaco.editor.defineTheme('synta-dark', {
-      base: 'vs-dark', // use dark base
-      inherit: true,
-      rules: [
-        { token: 'keyword', foreground: 'f0c0c5', fontStyle: 'bold' },      // light pink
-        { token: 'identifier', foreground: 'e6a0a5' },                      // softer pink
-        { token: 'string', foreground: '34d399' },                          // green
-        { token: 'number', foreground: 'f0c0f5', fontStyle: 'bold' },       // lighter purple/pink
-        { token: 'comment', foreground: 'd7c2c2', fontStyle: 'italic' },    // muted
-        { token: 'operator', foreground: 'fbbf24', fontStyle: 'bold' },     // yellowish
-      ],
-      colors: {
-        'editor.background': '#2d1f23',             // dark background
-        'editor.foreground': '#faf7f5',             // light text
-        'editorLineNumber.foreground': '#d7c2c2',   // muted line numbers
-        'editorLineNumber.activeForeground': '#f0c0c5', // active line number
-        'editorCursor.foreground': '#f0c0c5',
-        'editor.selectionBackground': '#4d2b32',    // darker selection
-        'editor.inactiveSelectionBackground': '#33292b',
-        'editor.lineHighlightBackground': '#33292b',
-        'editor.lineHighlightBorder': '#4a3a3d',
-        'editorWhitespace.foreground': '#4a3a3d',
-        'editorIndentGuide.background': '#33292b',
-        'editorIndentGuide.activeBackground': '#4a3a3d',
-        'editorBracketMatch.background': '#4d2b32',
-        'editorBracketMatch.border': '#f0c0c5',
-      },
+    // Define Synta dark theme matching the visual identity
+    try {
+      monaco.editor.defineTheme('synta-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: 'ff6b9d', fontStyle: 'bold' },      // bright pink
+          { token: 'identifier', foreground: '9db4c0' },                      // light blue-gray
+          { token: 'string', foreground: '7dd3c0' },                          // teal
+          { token: 'number', foreground: 'd4a7ff', fontStyle: 'bold' },       // light purple
+          { token: 'comment', foreground: '6d5a5e', fontStyle: 'italic' },    // muted brown
+          { token: 'operator', foreground: 'ffd93d', fontStyle: 'bold' },     // yellow
+        ],
+        colors: {
+          'editor.background': '#2d1418',             // dark maroon
+          'editor.foreground': '#e8d4d6',             // light silver
+          'editorLineNumber.foreground': '#9d8589',   // muted text
+          'editorLineNumber.activeForeground': '#c4979b', // accent
+          'editorCursor.foreground': '#d32f2f',       // bright red cursor
+          'editor.selectionBackground': '#4d2b32',    // dark selection
+          'editor.inactiveSelectionBackground': '#3d1d24',
+          'editor.lineHighlightBackground': '#3d1d24',
+          'editor.lineHighlightBorder': '#4d2429',
+          'editorWhitespace.foreground': '#4d2429',
+          'editorIndentGuide.background': '#4d2429',
+          'editorIndentGuide.activeBackground': '#6d343d',
+          'editorBracketMatch.background': '#4d2b32',
+          'editorBracketMatch.border': '#d32f2f',
+        },
+      })
+      monaco.editor.setTheme('synta-dark')
+    } catch (e) {
+      // ignore theme errors
+    }
+
+    // Ctrl/Cmd+Enter to run
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      onRun?.()
     })
-    monaco.editor.setTheme('synta-dark')
-  } catch (e) {
-    // ignore theme errors
   }
-
-  // Ctrl/Cmd+Enter to run
-  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-    onRun?.()
-  })
-}
-
 
   useEffect(() => {
     const editor = editorRef.current
@@ -70,7 +69,7 @@ export default function EditorPane({ code, setCode, tokens = [], onRun }: Props)
       .filter(t => {
         if (!t.lexeme || t.line <= 0) return false
         const tt = (t.type || '').toUpperCase()
-        // Ignore standalone NEWLINE tokens (we only care about newlines inside strings)
+        // Ignore standalone NEWLINE tokens
         if (tt === 'NEWLINE') return false
         if (t.lexeme === '\\n' || t.lexeme === '\n') return false
         return true
@@ -81,7 +80,6 @@ export default function EditorPane({ code, setCode, tokens = [], onRun }: Props)
         const endCol = startCol + Math.max(1, t.lexeme.length)
         const className = mapTokenTypeToClass(t.type)
         return {
-          // store as simple numeric range first; will convert to monaco.Range when monaco is available
           range: { startLineNumber: startLine, startColumn: startCol, endLineNumber: startLine, endColumn: endCol } as any,
           options: { inlineClassName: className }
         }
@@ -91,7 +89,6 @@ export default function EditorPane({ code, setCode, tokens = [], onRun }: Props)
     try {
       const monaco = monacoRef.current || (window as any).monaco
       if (monaco) {
-        // use monaco.Range from the instance
         // @ts-ignore
         newDecorations.forEach(d => { d.range = new monaco.Range(d.range.startLineNumber, d.range.startColumn, d.range.endLineNumber, d.range.endColumn) })
       }
@@ -115,13 +112,14 @@ export default function EditorPane({ code, setCode, tokens = [], onRun }: Props)
         options={{ 
           minimap: { enabled: false }, 
           fontSize: 14, 
-          fontFamily: "Inter, ui-monospace, monospace",
+          fontFamily: "Inter, ui-monospace, 'Cascadia Code', 'Fira Code', monospace",
           lineHeight: 24,
           padding: { top: 16, bottom: 16 },
           scrollBeyondLastLine: false,
           smoothScrolling: true,
           cursorBlinking: 'smooth',
           cursorSmoothCaretAnimation: 'on',
+          fontLigatures: true,
         }}
         onMount={handleMount}
       />
