@@ -8,9 +8,10 @@ type Props = {
   setCode: (c: string) => void
   tokens?: TokenDTO[]
   onRun?: () => void
+  theme?: 'light' | 'dark'
 }
 
-export default function EditorPane({ code, setCode, tokens = [], onRun }: Props) {
+export default function EditorPane({ code, setCode, tokens = [], onRun, theme = 'dark' }: Props) {
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<any>(null)
   const decorationsRef = useRef<string[]>([])
@@ -19,26 +20,26 @@ export default function EditorPane({ code, setCode, tokens = [], onRun }: Props)
     editorRef.current = editor
     monacoRef.current = monaco
 
-    // Define Synta dark theme matching the visual identity
+    // Define Synta dark theme
     try {
       monaco.editor.defineTheme('synta-dark', {
         base: 'vs-dark',
         inherit: true,
         rules: [
-          { token: 'keyword', foreground: 'ff6b9d', fontStyle: 'bold' },      // bright pink
-          { token: 'identifier', foreground: '9db4c0' },                      // light blue-gray
-          { token: 'string', foreground: '7dd3c0' },                          // teal
-          { token: 'number', foreground: 'd4a7ff', fontStyle: 'bold' },       // light purple
-          { token: 'comment', foreground: '6d5a5e', fontStyle: 'italic' },    // muted brown
-          { token: 'operator', foreground: 'ffd93d', fontStyle: 'bold' },     // yellow
+          { token: 'keyword', foreground: 'ff6b9d', fontStyle: 'bold' },
+          { token: 'identifier', foreground: '9db4c0' },
+          { token: 'string', foreground: '7dd3c0' },
+          { token: 'number', foreground: 'd4a7ff', fontStyle: 'bold' },
+          { token: 'comment', foreground: '6d5a5e', fontStyle: 'italic' },
+          { token: 'operator', foreground: 'ffd93d', fontStyle: 'bold' },
         ],
         colors: {
-          'editor.background': '#2d1418',             // dark maroon
-          'editor.foreground': '#e8d4d6',             // light silver
-          'editorLineNumber.foreground': '#9d8589',   // muted text
-          'editorLineNumber.activeForeground': '#c4979b', // accent
-          'editorCursor.foreground': '#d32f2f',       // bright red cursor
-          'editor.selectionBackground': '#4d2b32',    // dark selection
+          'editor.background': '#2d1418',
+          'editor.foreground': '#e8d4d6',
+          'editorLineNumber.foreground': '#9d8589',
+          'editorLineNumber.activeForeground': '#c4979b',
+          'editorCursor.foreground': '#d32f2f',
+          'editor.selectionBackground': '#4d2b32',
           'editor.inactiveSelectionBackground': '#3d1d24',
           'editor.lineHighlightBackground': '#3d1d24',
           'editor.lineHighlightBorder': '#4d2429',
@@ -49,7 +50,39 @@ export default function EditorPane({ code, setCode, tokens = [], onRun }: Props)
           'editorBracketMatch.border': '#d32f2f',
         },
       })
-      monaco.editor.setTheme('synta-dark')
+
+      // Define Synta light theme
+      monaco.editor.defineTheme('synta-light', {
+        base: 'vs',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: 'c41e3a', fontStyle: 'bold' },
+          { token: 'identifier', foreground: '4a5568' },
+          { token: 'string', foreground: '059669' },
+          { token: 'number', foreground: '7c3aed', fontStyle: 'bold' },
+          { token: 'comment', foreground: 'a0aec0', fontStyle: 'italic' },
+          { token: 'operator', foreground: 'd97706', fontStyle: 'bold' },
+        ],
+        colors: {
+          'editor.background': '#faf7f5',
+          'editor.foreground': '#1a1a1a',
+          'editorLineNumber.foreground': '#a0aec0',
+          'editorLineNumber.activeForeground': '#c41e3a',
+          'editorCursor.foreground': '#c41e3a',
+          'editor.selectionBackground': '#fce7e9',
+          'editor.inactiveSelectionBackground': '#f5e5e7',
+          'editor.lineHighlightBackground': '#fef5f5',
+          'editor.lineHighlightBorder': '#fce7e9',
+          'editorWhitespace.foreground': '#e5e7eb',
+          'editorIndentGuide.background': '#e5e7eb',
+          'editorIndentGuide.activeBackground': '#cbd5e0',
+          'editorBracketMatch.background': '#fce7e9',
+          'editorBracketMatch.border': '#c41e3a',
+        },
+      })
+
+      // Set initial theme
+      monaco.editor.setTheme(theme === 'light' ? 'synta-light' : 'synta-dark')
     } catch (e) {
       // ignore theme errors
     }
@@ -60,6 +93,19 @@ export default function EditorPane({ code, setCode, tokens = [], onRun }: Props)
     })
   }
 
+  // Switch theme when theme prop changes
+  useEffect(() => {
+    const monaco = monacoRef.current
+    if (monaco) {
+      try {
+        monaco.editor.setTheme(theme === 'light' ? 'synta-light' : 'synta-dark')
+      } catch (e) {
+        // ignore theme errors
+      }
+    }
+  }, [theme])
+
+  // Re-apply decorations when theme or tokens change
   useEffect(() => {
     const editor = editorRef.current
     if (!editor) return
@@ -78,7 +124,7 @@ export default function EditorPane({ code, setCode, tokens = [], onRun }: Props)
         const startLine = t.line
         const startCol = Math.max(1, t.column)
         const endCol = startCol + Math.max(1, t.lexeme.length)
-        const className = mapTokenTypeToClass(t.type)
+        const className = mapTokenTypeToClass(t.type, theme === 'light')
         return {
           range: { startLineNumber: startLine, startColumn: startCol, endLineNumber: startLine, endColumn: endCol } as any,
           options: { inlineClassName: className }
@@ -96,11 +142,7 @@ export default function EditorPane({ code, setCode, tokens = [], onRun }: Props)
     } catch (e) {
       // ignore if monaco not ready
     }
-  }, [tokens])
-
-  useEffect(() => {
-    return () => {}
-  }, [])
+  }, [tokens, theme])
 
   return (
     <div className="editorContainer" style={{ height: '100%' }}>
@@ -127,17 +169,19 @@ export default function EditorPane({ code, setCode, tokens = [], onRun }: Props)
   )
 }
 
-function mapTokenTypeToClass(type: string) {
+function mapTokenTypeToClass(type: string, lightMode: boolean = false) {
   const keywords = new Set([
     'IF','ELIF','ELSE','WHILE','MATCH','RETURN','AWAIT','BREAK','CONTINUE','BIND','CONST','CRAFT','USE','AS','FROM','FN','STRUCT',
     'TRY','CATCH','RAISE','TYPE','CAST','ANY','NONE','TRAIT','INT_TYPE','FLOAT_TYPE','CHAR_TYPE','BOOL_TYPE','STR_TYPE','ASYNC'
   ])
   const t = type.toUpperCase()
-  if (keywords.has(t) || t === 'AT_AGENT' || t === 'AT_TASK') return 'tok-keyword'
-  if (t === 'STRING') return 'tok-string'
-  if (t === 'INTEGER' || t === 'FLOAT') return 'tok-number'
-  if (t === 'COMMENT_LINE' || t === 'COMMENT_MULTI') return 'tok-comment'
-  if (t === 'ILLEGAL') return 'tok-illegal'
-  if (t === 'PLUS' || t === 'MINUS' || t === 'ARROW' || t.endsWith('_ASSIGN') || t === 'EQ' || t === 'NEQ') return 'tok-operator'
-  return 'tok-identifier'
+  const prefix = lightMode ? 'tok-light-' : 'tok-'
+  
+  if (keywords.has(t) || t === 'AT_AGENT' || t === 'AT_TASK') return `${prefix}keyword`
+  if (t === 'STRING') return `${prefix}string`
+  if (t === 'INTEGER' || t === 'FLOAT') return `${prefix}number`
+  if (t === 'COMMENT_LINE' || t === 'COMMENT_MULTI') return `${prefix}comment`
+  if (t === 'ILLEGAL') return `${prefix}illegal`
+  if (t === 'PLUS' || t === 'MINUS' || t === 'ARROW' || t.endsWith('_ASSIGN') || t === 'EQ' || t === 'NEQ') return `${prefix}operator`
+  return `${prefix}identifier`
 }

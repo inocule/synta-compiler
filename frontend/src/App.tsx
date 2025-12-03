@@ -66,7 +66,13 @@ function App() {
             {err && <div className="err">{err}</div>}
           </div>
           <div className="editor">
-            <EditorPane code={code} setCode={setCode} tokens={tokens} onRun={run} />
+            <EditorPane 
+              code={code} 
+              setCode={setCode} 
+              tokens={tokens} 
+              onRun={run}
+              theme={theme}
+            />
           </div>
         </div>
         <div className="pane right">
