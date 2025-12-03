@@ -244,7 +244,7 @@ body {
 }
 
 .toolbar button { 
-  background: linear-gradient(135deg, var(--red-gradient-start), var(--red-gradient-end)); 
+  background: linear-gradient(135deg, #C71585, #DB7093); /* dark pink to medium pink */
   border: none;
   color: #ffffff; 
   padding: 8px 20px; 
@@ -259,15 +259,16 @@ body {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+/* Optional: hover effect to make it pop more */
+.toolbar button:hover {
+  background: linear-gradient(135deg, #DB7093, #C71585); /* reverse gradient */
+  box-shadow: 0 4px 12px rgba(199, 21, 133, 0.6); /* darker pink glow */
+}
+
+
 [data-theme="dark"] .toolbar button {
   color: var(--accent-bright);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-.toolbar button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-red);
-  background: linear-gradient(135deg, var(--red-gradient-end), #e53935);
 }
 
 .toolbar button:active:not(:disabled) {
