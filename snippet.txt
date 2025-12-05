@@ -1,0 +1,66 @@
+@agent AICoder {
+    role: "Chatbot with GitHub MCP access",
+    tools: [github_mcp, slm_chatbot, pdf_scanner],
+    model: "local/llama-3.1-8b.gguf",
+    mode: "hybrid",
+    sys_prompt: "You are a chatbot capable of helping coders who is updated on GitHub repositories"
+}
+
+@task {
+    response =: AICoder -> "Fix this line of text"
+    print(response)
+}
+
+!> Variable declarations
+bind int x =: 10~
+const PI =: 3.14~
+x =: 20~
+
+!> Function with typed parameters
+fn calculate(a:int, b:int) do {
+    if a > b {
+        return a + b
+    } else {
+        return a - b
+    }
+}
+
+<! 
+This is a 
+multi-line 
+comment 
+!>
+
+!> While loop example
+int i =: 0~
+while i < 5 {
+    print("Hello World")~
+    i++
+}
+
+!> For loop example
+for int j =: 0; j < 5; j++ {
+    print("Counting: " + j)~
+}
+
+!> Switch / Case example
+int option =: 2~
+switch option {
+    case 1 {
+        print("Option 1 selected")~
+    }
+    case 2 {
+        print("Option 2 selected")~
+    }
+    default {
+        print("Default option")~
+    }
+}
+
+!> Array and dictionary examples
+arr =: [1, 2, 3, 4, 5]~
+dict =: { "name" =: "Jay", "age" =: 20 }~
+
+!> Task pipeline example
+result =: "Analyze this text" -> AICoder -> "Summarize"~
+print(result)~

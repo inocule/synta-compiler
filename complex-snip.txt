@@ -1,0 +1,396 @@
+!> ========================================
+!> INTENT-AWARE DEBUGGER CONFIGURATION
+!> ========================================
+
+allow pseudo(anno, trace, breakpoint, 10)~
+
+debug.configure {
+    mode: "intent_trace",
+    output_format: "markdown",
+    log_level: "verbose",
+    track_concurrency: true
+}
+
+outputs: {
+    intent_log: "./debug/intent_trace.md",
+    performance_metrics: "./debug/perf_metrics.csv",
+    execution_flow: "./debug/flow_diagram.txt",
+    ai_insights: "./debug/ai_analysis.md"
+}
+
+breakpoints: {
+    on_intent_mismatch: true,
+    on_type_error: true,
+    on_concurrency_deadlock: true,
+    on_ai_hallucination: true
+}
+
+markdown_config: {
+    include_pseudocode: true,
+    trace_ai_reasoning: true,
+    visualize_control_flow: true,
+    highlight_edge_cases: true
+}
+
+csv_config: {
+    track_data_transformations: true,
+    log_aggregation_steps: true,
+    monitor_parallel_processing: true,
+    detect_race_conditions: true
+}
+
+txt_config: {
+    capture_text_processing: true,
+    trace_string_operations: true,
+    log_encoding_changes: true,
+    monitor_buffer_usage: true
+}
+
+!> @intent: Demonstrate Synta's AI-native features
+!> @assumptions: GitHub MCP exists
+!> @edge_cases: Handle failures
+
+
+!> ========================================
+!> AI AGENT DEFINITIONS
+!> ========================================
+
+@agent AICoder {
+    role: "Chatbot with GitHub MCP access",
+    tools: [github_mcp, slm_chatbot, pdf_scanner],
+    model: "local/llama-3.1-8b.gguf",
+    mode: "hybrid",
+    sys_prompt: "You are a chatbot capable of helping coders who is updated on GitHub repositories"
+}
+
+@agent ClaudeOpus {
+    role: "LLM-focused reasoning and text generation assistant",
+    tools: [text_summarizer, code_explainer, idea_generator],
+    model: "cloud/claude-opus-4.5.gguf",
+    mode: "cloud",
+    sys_prompt: "You are focused on deep reasoning, summarizing text, and generating explanations",
+
+    max_concurrent_requests =: 3~
+    timeout =: 60s~
+    retry_policy =: "linear_backoff"~
+}
+
+
+<!
+TASK EXAMPLE
+!> 
+
+@task {
+    code_fix =: AICoder -> "Fix the syntax errors in this function"~
+    print(code_fix)~
+
+    summary =: ClaudeOpus -> "Summarize the logic and purpose of this code"~
+    print(summary)~
+}
+
+task_pool =: create_pool(max_workers: 4)~
+
+
+!> ========================================
+!> VARIABLE DECLARATIONS
+!> ========================================
+
+bind int x =: 10~
+const PI =: 3.14~
+x =: 20~
+
+debug.checkpoint("variable_initialization") {
+    assert x == 20~
+    assert PI == 3.14~
+}
+
+
+!> ========================================
+!> FUNCTION DEFINITIONS
+!> ========================================
+
+async fn calculate(a:int, b:int) => int {
+    if a > b {
+        return a + b~
+    } else {
+        return a - b~
+    }
+}
+
+async fn batch_calculate(numbers: []int) => []int {
+    results =: []~
+    tasks =: []~
+
+    for i =: 0; i < len(numbers) - 1; i++ {
+        task_future =: async calculate(numbers[i], numbers[i+1])~
+        tasks.append(task_future)~
+    }
+
+    results =: await merge(tasks) {
+        strategy: "all",
+        timeout: 10s
+    }~
+
+    return results~
+}
+
+
+!> ========================================
+!> LOOP EXAMPLES
+!> ========================================
+
+int i =: 0~
+while i < 5 {
+    print("Hello World")~
+    i++~
+}
+
+task parallel_hello {
+    flow range(0, 5) through
+        emit => greet
+
+    listen greet { index =>
+        async {
+            print("Parallel Hello from iteration ${index}")~
+        }
+    }
+}
+
+for int j =: 0; j < 5; j++ {
+    print("Counting: " + j)~
+
+    debug.trace("loop_iteration") {
+        iteration: j,
+        intent: "Sequential counting demonstration"
+    }
+}
+
+async fn parallel_count() {
+    for int k =: 0; k < 5; k++ concurrent {
+        task_pool.submit {
+            result =: calculate(k, k * 2)~
+            print("Parallel result ${k}: ${result}")~
+        }
+    }
+
+    await task_pool.join()~
+}
+
+
+!> ========================================
+!> PATTERN MATCHING
+!> ========================================
+
+int option =: 2~
+
+async fn handle_option(opt:int) {
+    match opt {
+        case 1 {
+            async {
+                response =: await AICoder -> "Analyze option 1"~
+                print("Option 1 selected: ${response}")~
+            }
+        }
+        case 2 {
+            async {
+                task analyze =: async AICoder -> "Analyze option 2"~
+                task suggest =: async AICoder -> "Suggest improvements"~
+
+                results =: await merge(analyze, suggest)~
+                print("Option 2 results: ${results}")~
+            }
+        }
+        default {
+            print("Default option")~
+        }
+    }
+}
+
+dispatch handle_option(option)~
+
+
+!> ========================================
+!> CONCURRENT DATA PROCESSING
+!> ========================================
+
+arr =: [1, 2, 3, 4, 5]~
+
+async fn parallel_process_array(data: []int) => []int {
+    flow data through
+        transform => double => validate
+
+    fn double(x:int) => int concurrent {
+        return x * 2~
+    }
+
+    fn validate(x:int) => int {
+        observe validation_success, processing_time
+        return x~
+    }
+}
+
+processed_arr =: await parallel_process_array(arr)~
+print("Processed array: ${processed_arr}")~
+
+dict =: { "name" =: "Jay", "age" =: 20 }~
+
+async fn update_user_info(user_dict: Map) {
+    task update_name {
+        user_dict["name"] =: "Jay Updated"~
+    }
+
+    task update_age {
+        user_dict["age"] =: 21~
+    }
+
+    task add_email {
+        user_dict["email"] =: "jay@example.com"~
+    }
+
+    await merge(update_name, update_age, add_email)~
+}
+
+dispatch update_user_info(dict)~
+
+
+!> ========================================
+!> AI PIPELINE
+!> ========================================
+
+async fn ai_pipeline(input_text:string) => Report {
+    task sentiment_task {
+        sentiment =: await AICoder -> "Analyze sentiment: ${input_text}"~
+        return { type: "sentiment", result: sentiment }~
+    }
+
+    task summary_task {
+        summary =: await AICoder -> "Summarize: ${input_text}"~
+        return { type: "summary", result: summary }~
+    }
+
+    task keywords_task {
+        keywords =: await AICoder -> "Extract keywords: ${input_text}"~
+        return { type: "keywords", result: keywords }~
+    }
+
+    stage1_results =: await merge(sentiment_task, summary_task, keywords_task) {
+        strategy: "all",
+        timeout: 45s
+    }~
+
+    final_report =: await AICoder -> "Create report from: ${stage1_results}"~
+
+    observe pipeline_latency, ai_token_usage {
+        window: 1m,
+        alert_threshold: 30s
+    }
+
+    return final_report~
+}
+
+async fn batch_ai_processing() {
+    inputs =: [
+        "Analyze this text",
+        "Review this code",
+        "Summarize this article"
+    ]~
+
+    tasks =: []~
+    for text in inputs {
+        future =: async ai_pipeline(text)~
+        tasks.append(future)~
+    }
+
+    all_reports =: await merge(tasks)~
+
+    for report in all_reports {
+        print("Report: ${report}")~
+    }
+}
+
+
+!> ========================================
+!> EVENT-DRIVEN CONCURRENCY
+!> ========================================
+
+emit DataProcessed { content: "Sample data", timestamp: now() }~
+emit AnalysisRequested { priority: "high", data_id: 123 }~
+
+listen DataProcessed { event =>
+    async {
+        log.info("Data processed: ${event.content}")~
+        observe event_latency
+    }
+}
+
+listen DataProcessed { event =>
+    async {
+        analysis =: await AICoder -> "Analyze: ${event.content}"~
+        emit AnalysisComplete { result: analysis }~
+    }
+}
+
+listen AnalysisRequested { event =>
+    async {
+        if event.priority == "high" {
+            dispatch process_urgent(event.data_id)~
+        } else {
+            task_pool.submit_delayed(5s) {
+                process_normal(event.data_id)~
+            }
+        }
+    }
+}
+
+
+!> ========================================
+!> MAIN EXECUTION
+!> ========================================
+
+async fn main() {
+    debug.trace("main_execution_start") {
+        intent: "Demonstrate all Synta concurrency features",
+        timestamp: now()
+    }
+
+    calc_results =: await batch_calculate([10,20,30,40,50])~
+    print("Batch calculations: ${calc_results}")~
+
+    await parallel_count()~
+
+    await batch_ai_processing()~
+
+    emit ProgramComplete {
+        total_tasks: 15,
+        success: true,
+        duration: execution_time()
+    }~
+
+    debug.trace("main_execution_end") {
+        intent: "All concurrent operations completed successfully",
+        timestamp: now()
+    }
+}
+
+await main()~
+
+debug.generate_report {
+    include: [
+        "intent_mismatches",
+        "concurrency_bottlenecks",
+        "ai_performance_metrics",
+        "type_safety_violations",
+        "execution_timeline"
+    ],
+
+    format_by_type: {
+        markdown: "detailed_narrative",
+        csv: "tabular_metrics",
+        txt: "plain_execution_log"
+    },
+
+    ai_insights: true,
+    suggest_optimizations: true
+}
+
+print("Program execution complete with full intent tracing")~
