@@ -12,9 +12,9 @@
 }
 
 !> Variable declarations
-bind int x =: 10~
-const PI =: 3.14~
-x =: 20~
+bind int x =: 10;
+const PI =: 3.14;
+x =: 20;
 
 !> Function with typed parameters
 fn calculate(a:int, b:int) do {
@@ -32,35 +32,35 @@ comment
 !>
 
 !> While loop example
-int i =: 0~
+int i =: 0;
 while i < 5 {
-    print("Hello World")~
+    print("Hello World");
     i++
 }
 
 !> For loop example
 for int j =: 0; j < 5; j++ {
-    print("Counting: " + j)~
+    print("Counting: " + j);
 }
 
 !> Switch / Case example
-int option =: 2~
+int option =: 2;
 switch option {
     case 1 {
-        print("Option 1 selected")~
+        print("Option 1 selected");
     }
     case 2 {
-        print("Option 2 selected")~
+        print("Option 2 selected");
     }
     default {
-        print("Default option")~
+        print("Default option");
     }
 }
 
 !> Array and dictionary examples
-arr =: [1, 2, 3, 4, 5]~
-dict =: { "name" =: "Jay", "age" =: 20 }~
+arr =: [1, 2, 3, 4, 5];
+dict =: { "name" =: "Jay", "age" =: 20 };
 
 !> Task pipeline example
-result =: "Analyze this text" -> AICoder -> "Summarize"~
-print(result)~
+result =: "Analyze this text" -> AICoder -> "Summarize";
+print(result);

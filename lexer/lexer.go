@@ -227,9 +227,9 @@ func (l *Lexer) Tokenize() []token.Token {
 
 		// Handle operators and delimiters
 		switch ch {
-		case '~':
+		case ';':
 			l.advance()
-			l.addToken(token.STATEMENT_END, "~", line, column)
+			l.addToken(token.STATEMENT_END, ";", line, column)
 
 		case '+':
 			l.advance()
@@ -382,17 +382,19 @@ func (l *Lexer) Tokenize() []token.Token {
 			l.advance()
 			l.addToken(token.RBRACE, "}", line, column)
 
-		case ';':
-			l.advance()
-			l.addToken(token.SEMICOLON, ";", line, column)
-
 		case ',':
 			l.advance()
 			l.addToken(token.COMMA, ",", line, column)
 
 		case '.':
 			l.advance()
-			l.addToken(token.DOT, ".", line, column)
+			// Check if this is a function like .config
+			if unicode.IsLetter(rune(l.peek(0))) || l.peek(0) == '_' {
+				ident := l.readIdentifier()
+				l.addToken(token.IDENTIFIER, "."+ident, line, column)
+			} else {
+				l.addToken(token.DOT, ".", line, column)
+			}
 
 		case '\n':
 			l.advance()

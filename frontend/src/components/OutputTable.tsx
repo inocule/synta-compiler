@@ -11,9 +11,13 @@ type Props = {
     onLineChange: (direction: 'up' | 'down') => void
 }
 
+
 const filterNewlines = (tokens: TokenDTO[]) => tokens.filter(t => {
+    if (!t) return false
     const tt = (t.type || '').toUpperCase()
-    return tt !== 'NEWLINE' && t.lexeme !== "\\n" && t.lexeme !== "\n"
+    const isNewline = tt === 'NEWLINE' || t.lexeme === "\\n" || t.lexeme === "\n"
+    // Also filter out tokens without valid line numbers
+    return !isNewline && t.line !== undefined && t.line !== null && t.line > 0
 })
 
 const calculateWhitespaceCount = (code: string) => 
@@ -61,11 +65,11 @@ const parseCodeBlocks = (code: string, tokens: TokenDTO[]): CodeBlock[] => {
         if (!trimmed) { i++; continue }
 
         // Multi-line comment: <! ... !>
-        if (trimmed.startsWith('<!') || trimmed.startsWith('/*') || trimmed.startsWith('/~')) {
+        if (trimmed.startsWith('<!') || trimmed.startsWith('/*') || trimmed.startsWith('/*')) {
             const startLine = lineNum
             let endLine = lineNum
             let blockCode = line
-            const closers = ['!>', '*/', '~/']
+            const closers = ['!>', '*/', '*/']
             
             if (!closers.some(c => line.includes(c))) {
                 for (let j = i + 1; j < lines.length; j++) {
@@ -234,11 +238,11 @@ function CodeBlockViewer({ tokens, code }: { tokens: TokenDTO[], code: string })
                     {block.tokens.length > 0 && (
                         <div style={{ padding: 'var(--spacing-sm) var(--spacing-md)' }}>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)' }}>
-                                <div className="token-item token-count" style={{ fontSize: '0.7rem' }}>
+                                <div className="token-item token-count">
                                     <span className="token-type">Token Count</span>
                                     <span className="token-lexeme">{block.tokenCount}</span>
                                 </div>
-                                <div className="token-item ws-count" style={{ fontSize: '0.7rem' }}>
+                                <div className="token-item ws-count">
                                     <span className="token-type">WS Count</span>
                                     <span className="token-lexeme">{block.wsCount}</span>
                                 </div>
@@ -266,15 +270,16 @@ function CodeBlockViewer({ tokens, code }: { tokens: TokenDTO[], code: string })
 function ClassicTokenTable({ tokens, whitespaceCounts }: { tokens: TokenDTO[], whitespaceCounts: number[] }) {
     const visible = useMemo(() => filterNewlines(tokens), [tokens])
     const tokenCounts = useMemo(() => calculateTokenCounts(tokens), [tokens])
+    const totalTokens = useMemo(() => visible.length, [visible])
 
     return (
         <div style={{ flex: 1, overflow: 'auto' }}>
             <div style={{ padding: '10px 12px', color: 'var(--text)', fontWeight: 700, fontSize: '0.95rem' }}>
-                Total Tokens: {Object.values(tokenCounts).reduce((s, v) => s + v, 0)}
+                Total Tokens: {totalTokens}
             </div>
             <table>
                 <thead>
-                    <tr><th>Lexeme</th><th>Type</th><th>Line</th><th>WS Count</th></tr>
+                    <tr><th>Lexeme</th><th>Token</th><th>Line</th><th>WS Count</th></tr>
                 </thead>
                 <tbody>
                     {visible.map((t, i) => (
@@ -295,18 +300,17 @@ function LineByLineViewer({ tokens, code, whitespaceCounts }: { tokens: TokenDTO
     const lines = useMemo(() => code.split('\n'), [code])
     const tokensByLine = useMemo(() => 
         filterNewlines(tokens).reduce((acc, t) => {
-            const lineNum = t.line - 1
+            const lineNum = t.line
             if (!acc[lineNum]) acc[lineNum] = []
             acc[lineNum].push(t)
             return acc
         }, {} as Record<number, TokenDTO[]>), [tokens])
-    const tokenCounts = useMemo(() => calculateTokenCounts(tokens), [tokens])
 
     return (
         <div className="line-by-line-viewer">
             {lines.map((line, lineIndex) => {
-                const lineTokens = tokensByLine[lineIndex] || []
                 const lineNumber = lineIndex + 1
+                const lineTokens = tokensByLine[lineNumber] || []
                 const wsCount = whitespaceCounts[lineIndex] ?? 0
                 const isBlank = line.trim().length === 0 && lineTokens.length === 0
                 if (isBlank) return null
@@ -319,7 +323,7 @@ function LineByLineViewer({ tokens, code, whitespaceCounts }: { tokens: TokenDTO
                             <div className="tokens-list">
                                 <div className="token-item token-count">
                                     <span className="token-type">Token Count</span>
-                                    <span className="token-lexeme">{tokenCounts[lineNumber] ?? 0}</span>
+                                    <span className="token-lexeme">{lineTokens.length}</span>
                                 </div>
                                 <div className="token-item ws-count">
                                     <span className="token-type">WS Count</span>
@@ -347,8 +351,7 @@ function SingleLineViewer({ tokens, code, currentLine, onLineChange, whitespaceC
     const currentLineTokens = useMemo(() => 
         filterNewlines(tokens).filter(t => t.line === currentLine), [tokens, currentLine])
     const wsCount = whitespaceCounts[currentLine - 1] ?? 0
-    const tokenCounts = useMemo(() => calculateTokenCounts(tokens), [tokens])
-    const tokenCountForLine = tokenCounts[currentLine] ?? 0
+    const tokenCountForLine = currentLineTokens.length
 
     return (
         <div className="single-line-viewer">
@@ -400,6 +403,13 @@ export default function OutputTable(props: Props) {
         singleLine: `Tokens (Line ${props.currentLine} / ${props.code.split('\n').length})`,
         codeBlock: 'Code Blocks View'
     }
+
+    // Debug: Log tokens to console
+    React.useEffect(() => {
+        console.log('Tokens received:', props.tokens)
+        console.log('Total tokens:', props.tokens.length)
+        console.log('Filtered tokens:', filterNewlines(props.tokens).length)
+    }, [props.tokens])
 
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
