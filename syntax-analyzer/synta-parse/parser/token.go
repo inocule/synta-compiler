@@ -1,5 +1,4 @@
-// token/token.go
-package token
+package parser
 
 type TokenType int
 

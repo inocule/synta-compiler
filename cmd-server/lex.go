@@ -1,4 +1,4 @@
-package main
+package lex
 
 import (
 	"encoding/json"
@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"synta-lexical/lexer"
-	"synta-lexical/token"
+	lexer "synta-compiler/lexical-analyzer"
+	"synta-compiler/token"
 )
 
 type analyzeReq struct {

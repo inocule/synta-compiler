@@ -2,7 +2,7 @@
 package lexer
 
 import (
-	"synta-lexical/token"
+	"synta-compiler/token"
 	"unicode"
 )
 
