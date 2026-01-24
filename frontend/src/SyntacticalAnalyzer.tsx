@@ -26,21 +26,17 @@ interface ParseWarning {
 
 type ViewMode = 'summary' | 'errors'
 
-const SyntacticalAnalyzer: React.FC = () => {
+interface SyntacticalAnalyzerProps {
+  theme: 'light' | 'dark'
+}
+
+const SyntacticalAnalyzer: React.FC<SyntacticalAnalyzerProps> = ({ theme }) => {
   const [code, setCode] = useState<string>('// Enter your .synta code here\n')
   const [parseResult, setParseResult] = useState<ParseResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('summary')
 
-  // Theme state management
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
-
-  // Load saved theme on mount
-  useEffect(() => {
-    const savedTheme = (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
-    setTheme(savedTheme)
-    document.body.setAttribute('data-theme', savedTheme)
-  }, [])
+  // Theme state management removed - now controlled by parent App.tsx
 
   const handleParse = async () => {
     setLoading(true)
