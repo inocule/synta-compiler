@@ -1,0 +1,445 @@
+/* HomePage.css - Matching SYNTA Design System */
+
+.homepage {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  animation: fadeInHome 0.8s ease-out forwards;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+.homepage.mounted {
+  opacity: 1;
+}
+
+@keyframes fadeInHome {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Animated Background Gradient */
+.bg-gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(199, 21, 133, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(219, 112, 147, 0.08) 0%, transparent 50%);
+  z-index: 0;
+  pointer-events: none;
+  animation: gradientShift 20s ease-in-out infinite;
+}
+
+[data-theme="dark"] .bg-gradient-overlay {
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(199, 21, 133, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(219, 112, 147, 0.12) 0%, transparent 50%);
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Content Container */
+.homepage-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  justify-content: center;
+}
+
+/* Header */
+.homepage-header {
+  text-align: center;
+  margin-bottom: 60px;
+  animation: slideDownHome 0.8s ease-out 0.2s backwards;
+}
+
+@keyframes slideDownHome {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.synta-logo {
+  width: auto;
+  height: 120px;
+  max-width: 100%;
+  object-fit: contain;
+  margin-bottom: var(--spacing-lg);
+  filter: 
+    drop-shadow(0 0 15px rgba(199, 21, 133, 0.4))
+    drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  animation: logoGlow 3s ease-in-out infinite;
+  transition: transform var(--transition-base);
+}
+
+.synta-logo:hover {
+  transform: scale(1.02);
+}
+
+@keyframes logoGlow {
+  0%, 100% {
+    filter: 
+      drop-shadow(0 0 15px rgba(199, 21, 133, 0.4))
+      drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  }
+  50% {
+    filter: 
+      drop-shadow(0 0 25px rgba(219, 112, 147, 0.6))
+      drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  }
+}
+
+[data-theme="dark"] .synta-logo {
+  filter: 
+    drop-shadow(0 0 20px rgba(255, 105, 180, 0.5))
+    drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+}
+
+[data-theme="dark"] .synta-logo {
+  animation: logoGlowDark 3s ease-in-out infinite;
+}
+
+@keyframes logoGlowDark {
+  0%, 100% {
+    filter: 
+      drop-shadow(0 0 20px rgba(255, 105, 180, 0.5))
+      drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+  }
+  50% {
+    filter: 
+      drop-shadow(0 0 35px rgba(255, 192, 203, 0.7))
+      drop-shadow(0 4px 16px rgba(0, 0, 0, 0.5));
+  }
+}
+
+.tagline {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Analyzer Cards */
+.analyzer-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--spacing-xl);
+  margin-bottom: 40px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.analyzer-card {
+  position: relative;
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  overflow: hidden;
+  animation: slideUpHome 0.8s ease-out backwards;
+  box-shadow: var(--shadow-md);
+}
+
+.analyzer-card:nth-child(1) {
+  animation-delay: 0.4s;
+}
+
+.analyzer-card:nth-child(2) {
+  animation-delay: 0.6s;
+}
+
+@keyframes slideUpHome {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.analyzer-card.hovered {
+  transform: translateY(-6px);
+  border-color: var(--accent);
+  box-shadow: 
+    var(--shadow-lg),
+    0 0 40px rgba(199, 21, 133, 0.2);
+}
+
+[data-theme="dark"] .analyzer-card.hovered {
+  box-shadow: 
+    var(--shadow-lg),
+    0 0 50px rgba(255, 105, 180, 0.3);
+}
+
+.analyzer-card.dimmed {
+  opacity: 0.4;
+  filter: blur(1px);
+}
+
+.card-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, 
+    rgba(199, 21, 133, 0.1) 0%, 
+    rgba(219, 112, 147, 0.1) 100%);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  pointer-events: none;
+}
+
+.analyzer-card.hovered .card-glow {
+  opacity: 1;
+}
+
+/* Accent Line */
+.card-accent-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--red-gradient-start), var(--red-gradient-end));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-base);
+}
+
+.analyzer-card.hovered .card-accent-line {
+  transform: scaleX(1);
+}
+
+/* Card Content */
+.card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--spacing-md);
+  color: var(--accent);
+  transition: all var(--transition-base);
+}
+
+.analyzer-card.hovered .card-icon {
+  transform: scale(1.1) rotate(-5deg);
+  color: var(--red-gradient-start);
+}
+
+.card-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: 1.5;
+}
+
+.card-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.card-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.card-features li {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  transition: all var(--transition-fast);
+}
+
+.card-features li:last-child {
+  border-bottom: none;
+}
+
+.analyzer-card.hovered .card-features li {
+  color: var(--text);
+  border-color: var(--accent-light);
+}
+
+.feature-icon {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 16px;
+  transition: transform var(--transition-fast);
+}
+
+.analyzer-card.hovered .feature-icon {
+  transform: translateX(3px);
+  color: var(--red-gradient-start);
+}
+
+.card-cta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-bright);
+  margin-top: auto;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.analyzer-card.hovered .card-cta {
+  color: var(--red-gradient-start);
+}
+
+.cta-arrow {
+  font-size: 20px;
+  transition: transform var(--transition-base);
+}
+
+.analyzer-card.hovered .cta-arrow {
+  transform: translateX(6px);
+}
+
+/* Footer */
+.homepage-footer {
+  text-align: center;
+  padding-top: var(--spacing-lg);
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  animation: fadeInHome 1s ease-out 0.8s backwards;
+}
+
+.footer-text {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .homepage-content {
+    padding: 50px var(--spacing-lg);
+  }
+
+  .homepage-header {
+    margin-bottom: 50px;
+  }
+
+  .synta-logo {
+    height: 100px;
+  }
+
+  .tagline {
+    font-size: 20px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+  }
+
+  .analyzer-cards {
+    gap: var(--spacing-lg);
+    max-width: 500px;
+  }
+
+  .analyzer-card {
+    padding: 24px 20px;
+  }
+
+  .card-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .homepage-content {
+    padding: 40px var(--spacing-md);
+  }
+
+  .synta-logo {
+    height: 80px;
+  }
+
+  .tagline {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .analyzer-card {
+    padding: 20px var(--spacing-lg);
+  }
+
+  .card-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .card-title {
+    font-size: 18px;
+  }
+
+  .card-description {
+    font-size: 13px;
+  }
+
+  .card-features li {
+    font-size: 12px;
+  }
+}

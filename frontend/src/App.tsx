@@ -1,15 +1,19 @@
 // App.tsx
 
 import React, { useState, useEffect } from 'react'
+import HomePage from './HomePage'
+import SyntacticalAnalyzer from './SyntacticalAnalyzer'
 import EditorPane from './components/EditorPane'
 import OutputTable from './components/OutputTable'
 import { analyzeCode } from './api'
 import { TokenDTO } from './types'
 
-// Define the possible output modes (added 'codeBlock')
+// Define the possible output modes
 type ViewMode = 'table' | 'lineByLine' | 'singleLine' | 'codeBlock'
+type AnalyzerType = 'lexical' | 'syntactical' | null
 
 function App() {
+  const [selectedAnalyzer, setSelectedAnalyzer] = useState<AnalyzerType>(null)
   const [code, setCode] = useState<string>('// type code here\n')
   const [tokens, setTokens] = useState<TokenDTO[]>([])
   const [loading, setLoading] = useState(false)
@@ -37,6 +41,25 @@ function App() {
     setTheme(newTheme)
     document.body.setAttribute('data-theme', newTheme)
     localStorage.setItem('theme', newTheme)
+  }
+
+  // Handle analyzer selection
+  const handleSelectAnalyzer = (type: 'lexical' | 'syntactical') => {
+    setSelectedAnalyzer(type)
+    // Reset state when selecting analyzer
+    setCode('// type code here\n')
+    setTokens([])
+    setCurrentLine(1)
+    setErr(null)
+  }
+
+  // Handle back to home
+  const handleBackToHome = () => {
+    setSelectedAnalyzer(null)
+    setCode('// type code here\n')
+    setTokens([])
+    setCurrentLine(1)
+    setErr(null)
   }
 
   // Handle line change for singleLine mode
@@ -70,8 +93,8 @@ function App() {
   }
 
   const handleCreateNewFile = () => {
-  // Pseudocode content for AI Agents explanation
-  const content = String.raw`# AI Agents - Detailed Markdown Explanation
+    // Pseudocode content for AI Agents explanation
+    const content = String.raw`# AI Agents - Detailed Markdown Explanation
 
 ## Metadata
 - **File**: ai_agents.synta
@@ -159,105 +182,6 @@ Provide detailed context for AI reasoning, debugging, and concurrency tracking.
 ║  • Hallucination analysis                              ║
 ╚════════════════════════════════════════════════════════╝
 
-## 🔄 Execution Flow Diagram
-
-START
-  │
-  ▼
-┌────────────────────────────────────┐
-│ Initialize System                  │
-│ • Load agents (AICoder, ClaudeOpus)│
-│ • Configure debug settings         │
-│ • Create task_pool (4 workers)     │
-└─────────────┬──────────────────────┘
-              │
-              ▼
-        ┌─────────────┐
-        │ Task Queue  │
-        └──────┬──────┘
-               │
-        ┌──────▼──────────────────────┐
-        │  FOR each task in queue:    │
-        └──────┬──────────────────────┘
-               │
-        ┌──────▼─────────────────────────────┐
-        │ IF task.type == "code_fix":        │
-        └──────┬─────────────────────────────┘
-               │
-        ┌──────▼───────────────────────┐
-    YES │ Route to AICoder Agent       │
-        │  ┌────────────────────────┐  │
-        │  │ 1. Parse input         │  │
-        │  │ 2. Analyze syntax      │  │
-        │  │ 3. Apply fixes         │  │
-        │  │ 4. Validate output     │  │
-        │  └────────────────────────┘  │
-        │  result = AICoder.process()  │
-        │  log(result)                 │
-        └──────┬───────────────────────┘
-               │
-        ┌──────▼─────────────────────────────┐
-    NO  │ ELSE IF task.type == "summary":    │
-        └──────┬─────────────────────────────┘
-               │
-        ┌──────▼────────────────────────┐
-    YES │ Route to ClaudeOpus Agent     │
-        │  ┌────────────────────────┐   │
-        │  │ 1. Extract key points  │   │
-        │  │ 2. Generate summary    │   │
-        │  │ 3. Format output       │   │
-        │  └────────────────────────┘   │
-        │  result = ClaudeOpus.process()│
-        │  log(result)                  │
-        └──────┬────────────────────────┘
-               │
-        ┌──────▼──────────────────────┐
-        │ Store in intent_log         │
-        │ Analyze in ai_insights      │
-        └──────┬──────────────────────┘
-               │
-        ┌──────▼──────────────────────┐
-        │ END task iteration          │
-        └──────┬──────────────────────┘
-               │
-               ▼
-┌──────────────────────────────────┐
-│ All tasks complete               │
-│ Generate execution report        │
-└──────────────────────────────────┘
-  │
-  ▼
-END
-
-## Agents Detailed Explanation
-
-### STEP 1: Define AICoder agent
-- Role: coding assistance
-- Tools:
-  - GitHub MCP (fetch code, track changes, integrate version control)
-  - slm_chatbot (natural language code interaction)
-  - pdf_scanner (parse code from PDFs)
-- Model: local Llama 3.1 8B (~16–20GB VRAM for FP16, 2k–4k token window)
-- Mode: hybrid (local primary, cloud fallback)
-- Debug Notes: Monitor VRAM usage, task size, and malformed code edge cases
-
-### STEP 2: Define ClaudeOpus agent
-- Role: reasoning & text generation
-- Tools: text_summarizer, code_explainer, idea_generator
-- Model: cloud Claude Opus 4.5 (large context windows, scalable)
-- Mode: cloud
-- Settings: max 3 concurrent requests, timeout 60s, linear backoff retry
-- Debug Notes: Monitor queue, latency, type errors, hallucinations
-
-### STEP 3: Create Example Task
-- Intent: Demonstrate agent interaction
-- Actions:
-  1. Use AICoder to fix syntax errors
-  2. Use ClaudeOpus to summarize code
-  3. Print results
-- Edge Cases: cloud timeout, large/malformed code, task pool limits
-- Debug Notes: Outputs logged in intent_log, analyzed in ai_insights
-
 ## Execution Flow (Pseudocode)
 START
   Initialize agents (AICoder, ClaudeOpus)
@@ -323,6 +247,47 @@ END
     reader.readAsText(file)
   }
 
+  // Show HomePage if no analyzer is selected
+  if (!selectedAnalyzer) {
+    return <HomePage onSelectAnalyzer={handleSelectAnalyzer} />
+  }
+
+  // Show Syntactical Analyzer placeholder
+  if (selectedAnalyzer === 'syntactical') {
+    return (
+      <>
+        {/* Theme Toggle Button */}
+        <button 
+          className="theme-toggle" 
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+        >
+          <div className="theme-toggle-slider">
+            {theme === 'light' ? '☼' : '☾'}
+          </div>
+        </button>
+
+        {/* Back to Home Button */}
+        <button 
+          className="back-home-btn" 
+          onClick={handleBackToHome}
+          aria-label="Back to home"
+          title="Back to home"
+        >
+          ← HOME
+        </button>
+
+        {/* Analyzer Type Badge */}
+        <div className="analyzer-badge">
+          🌲 Syntactical Analyzer
+        </div>
+
+        <SyntacticalAnalyzer />
+      </>
+    )
+  }
+
+  // Show Lexical Analyzer Interface
   return (
     <>
       {/* Theme Toggle Button  */}
@@ -331,10 +296,25 @@ END
         onClick={toggleTheme}
         aria-label="Toggle theme"
       >
-      <div className="theme-toggle-slider">
-        {theme === 'light' ? '☼' : '☾'}
-      </div>
+        <div className="theme-toggle-slider">
+          {theme === 'light' ? '☼' : '☾'}
+        </div>
       </button>
+
+      {/* Back to Home Button */}
+      <button 
+        className="back-home-btn" 
+        onClick={handleBackToHome}
+        aria-label="Back to home"
+        title="Back to home"
+      >
+        ← HOME
+      </button>
+
+      {/* Analyzer Type Badge */}
+      <div className="analyzer-badge">
+        📊 Lexical Analyzer
+      </div>
 
       <div className="app-grid">
         <div className="pane left">
@@ -363,7 +343,7 @@ END
             
             <div className="grow" /> 
             
-            {/* START: Updated View Switcher UI with SingleLine */}
+            {/* View Switcher UI */}
             <div className="view-switch-container">
                 <button
                     className={`view-switch-btn ${viewMode === 'singleLine' ? 'active' : ''}`}
@@ -394,7 +374,6 @@ END
                   BLOCKS
                 </button>
             </div>
-            {/* END: Updated View Switcher UI */}
             {err && <div className="err">{err}</div>}
           </div>
           <div className="editor">
@@ -409,7 +388,6 @@ END
         </div>
         <div className="pane right">
           <div className="outputContainer">
-            {/* Pass the new line state and handler */}
             <OutputTable 
                 tokens={tokens} 
                 code={code} 
