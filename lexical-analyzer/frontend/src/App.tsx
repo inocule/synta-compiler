@@ -3,25 +3,30 @@
 import React, { useState, useEffect } from 'react'
 import EditorPane from './components/EditorPane'
 import OutputTable from './components/OutputTable'
-import { analyzeCode } from './api'
-import { TokenDTO } from './types'
+import ParseResults from './components/ParseResults'
+import StatusBar from './components/StatusBar'
+import LoadingIndicator from './components/LoadingIndicator'
+import { analyzeCode, parseCode } from './api'
+import { TokenDTO, ParseResult, AnalysisMode, LexicalView } from './types'
 
-// Define the possible output modes (added 'codeBlock')
-type ViewMode = 'table' | 'lineByLine' | 'singleLine' | 'codeBlock'
+type LoadingStage = 'tokenizing' | 'parsing' | 'complete' | null
 
 function App() {
   const [code, setCode] = useState<string>('// type code here\n')
   const [tokens, setTokens] = useState<TokenDTO[]>([])
+  const [parseResult, setParseResult] = useState<ParseResult | null>(null)
   const [loading, setLoading] = useState(false)
+  const [loadingStage, setLoadingStage] = useState<LoadingStage>(null)
+  const [analysisTime, setAnalysisTime] = useState<number | undefined>(undefined)
   const [err, setErr] = useState<string | null>(null)
 
-  // New state for view mode, default to 'table'
-  const [viewMode, setViewMode] = useState<ViewMode>('table')
+  // HYBRID MODE: Top-level analysis mode
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>('syntax')
   
-  // State for line navigation in singleLine mode
+  // Lexical sub-view (only used when analysisMode is 'lexical')
+  const [lexicalView, setLexicalView] = useState<LexicalView>('table')
+  
   const [currentLine, setCurrentLine] = useState(1)
-
-  // Theme state management 
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
   // Load saved theme on mount 
@@ -31,7 +36,6 @@ function App() {
     document.body.setAttribute('data-theme', savedTheme)
   }, [])
 
-  // Toggle theme function 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light'
     setTheme(newTheme)
@@ -39,7 +43,6 @@ function App() {
     localStorage.setItem('theme', newTheme)
   }
 
-  // Handle line change for singleLine mode
   const handleLineChange = (direction: 'up' | 'down') => {
     const maxLine = code.split('\n').length
     setCurrentLine(prev => {
@@ -55,23 +58,39 @@ function App() {
 
   async function run() {
     setLoading(true)
+    setLoadingStage('tokenizing')
     setErr(null)
+    const startTime = performance.now()
+    
     try {
+      // Tokenizing stage
       const tok = await analyzeCode(code)
       setTokens(tok)
       
-      // Reset currentLine to 1 after a successful run
+      // Parsing stage
+      setLoadingStage('parsing')
+      const parseRes = await parseCode(code)
+      setParseResult(parseRes)
+      
+      // Complete
+      setLoadingStage('complete')
+      const endTime = performance.now()
+      setAnalysisTime(Math.round(endTime - startTime))
+      
       setCurrentLine(1)
     } catch (e: any) {
       setErr(e.message || 'Analysis error')
+      setLoadingStage(null)
     } finally {
-      setLoading(false)
+      setTimeout(() => {
+        setLoading(false)
+        setLoadingStage(null)
+      }, 500)
     }
   }
 
   const handleCreateNewFile = () => {
-  // Pseudocode content for AI Agents explanation
-  const content = String.raw`# AI Agents - Detailed Markdown Explanation
+    const content = String.raw`# AI Agents - Detailed Markdown Explanation
 
 ## Metadata
 - **File**: ai_agents.synta
@@ -158,128 +177,8 @@ Provide detailed context for AI reasoning, debugging, and concurrency tracking.
 ║  • Type error detection                                ║
 ║  • Hallucination analysis                              ║
 ╚════════════════════════════════════════════════════════╝
-
-## 🔄 Execution Flow Diagram
-
-START
-  │
-  ▼
-┌────────────────────────────────────┐
-│ Initialize System                  │
-│ • Load agents (AICoder, ClaudeOpus)│
-│ • Configure debug settings         │
-│ • Create task_pool (4 workers)     │
-└─────────────┬──────────────────────┘
-              │
-              ▼
-        ┌─────────────┐
-        │ Task Queue  │
-        └──────┬──────┘
-               │
-        ┌──────▼──────────────────────┐
-        │  FOR each task in queue:    │
-        └──────┬──────────────────────┘
-               │
-        ┌──────▼─────────────────────────────┐
-        │ IF task.type == "code_fix":        │
-        └──────┬─────────────────────────────┘
-               │
-        ┌──────▼───────────────────────┐
-    YES │ Route to AICoder Agent       │
-        │  ┌────────────────────────┐  │
-        │  │ 1. Parse input         │  │
-        │  │ 2. Analyze syntax      │  │
-        │  │ 3. Apply fixes         │  │
-        │  │ 4. Validate output     │  │
-        │  └────────────────────────┘  │
-        │  result = AICoder.process()  │
-        │  log(result)                 │
-        └──────┬───────────────────────┘
-               │
-        ┌──────▼─────────────────────────────┐
-    NO  │ ELSE IF task.type == "summary":    │
-        └──────┬─────────────────────────────┘
-               │
-        ┌──────▼────────────────────────┐
-    YES │ Route to ClaudeOpus Agent     │
-        │  ┌────────────────────────┐   │
-        │  │ 1. Extract key points  │   │
-        │  │ 2. Generate summary    │   │
-        │  │ 3. Format output       │   │
-        │  └────────────────────────┘   │
-        │  result = ClaudeOpus.process()│
-        │  log(result)                  │
-        └──────┬────────────────────────┘
-               │
-        ┌──────▼──────────────────────┐
-        │ Store in intent_log         │
-        │ Analyze in ai_insights      │
-        └──────┬──────────────────────┘
-               │
-        ┌──────▼──────────────────────┐
-        │ END task iteration          │
-        └──────┬──────────────────────┘
-               │
-               ▼
-┌──────────────────────────────────┐
-│ All tasks complete               │
-│ Generate execution report        │
-└──────────────────────────────────┘
-  │
-  ▼
-END
-
-## Agents Detailed Explanation
-
-### STEP 1: Define AICoder agent
-- Role: coding assistance
-- Tools:
-  - GitHub MCP (fetch code, track changes, integrate version control)
-  - slm_chatbot (natural language code interaction)
-  - pdf_scanner (parse code from PDFs)
-- Model: local Llama 3.1 8B (~16–20GB VRAM for FP16, 2k–4k token window)
-- Mode: hybrid (local primary, cloud fallback)
-- Debug Notes: Monitor VRAM usage, task size, and malformed code edge cases
-
-### STEP 2: Define ClaudeOpus agent
-- Role: reasoning & text generation
-- Tools: text_summarizer, code_explainer, idea_generator
-- Model: cloud Claude Opus 4.5 (large context windows, scalable)
-- Mode: cloud
-- Settings: max 3 concurrent requests, timeout 60s, linear backoff retry
-- Debug Notes: Monitor queue, latency, type errors, hallucinations
-
-### STEP 3: Create Example Task
-- Intent: Demonstrate agent interaction
-- Actions:
-  1. Use AICoder to fix syntax errors
-  2. Use ClaudeOpus to summarize code
-  3. Print results
-- Edge Cases: cloud timeout, large/malformed code, task pool limits
-- Debug Notes: Outputs logged in intent_log, analyzed in ai_insights
-
-## Execution Flow (Pseudocode)
-START
-  Initialize agents (AICoder, ClaudeOpus)
-  Configure debug settings
-  Create task_pool with 4 workers
-  FOR each task:
-      IF task.type == "code_fix":
-          result = AICoder.process(task.input)
-          log(result)
-      ELSE IF task.type == "summary":
-          result = ClaudeOpus.process(task.input)
-          log(result)
-      ENDIF
-  ENDFOR
-END
-
-## Revision History
-- 2025-12-06: Initial generation
-- AI Insight: Agents designed for hybrid local/cloud execution; task example demonstrates intent and concurrency tracking
 `;
 
-    // Trigger download of the pseudocode file
     const element = document.createElement('a');
     const file = new Blob([content], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
@@ -288,9 +187,9 @@ END
     element.click();
     document.body.removeChild(element);
     
-    // Also clear the editor
     setCode('')
     setTokens([])
+    setParseResult(null)
     setCurrentLine(1)
     setErr(null)
   }
@@ -299,7 +198,6 @@ END
     const file = event.target.files?.[0]
     if (!file) return
 
-    // Validate file extension
     if (!file.name.endsWith('.synta')) {
       setErr('Error: Only .synta files are accepted')
       return
@@ -311,6 +209,7 @@ END
         const content = e.target?.result as string
         setCode(content)
         setTokens([])
+        setParseResult(null)
         setCurrentLine(1)
         setErr(null)
       } catch (error) {
@@ -325,15 +224,23 @@ END
 
   return (
     <>
-      {/* Theme Toggle Button  */}
+      {/* Loading Indicator */}
+      {loadingStage && loadingStage !== 'complete' && (
+        <LoadingIndicator 
+          stage={loadingStage as 'tokenizing' | 'parsing' | 'complete'} 
+          onComplete={() => setLoadingStage(null)} 
+        />
+      )}
+
+      {/* Theme Toggle Button */}
       <button 
         className="theme-toggle" 
         onClick={toggleTheme}
         aria-label="Toggle theme"
       >
-      <div className="theme-toggle-slider">
-        {theme === 'light' ? '☼' : '☾'}
-      </div>
+        <div className="theme-toggle-slider">
+          {theme === 'light' ? '☼' : '☾'}
+        </div>
       </button>
 
       <div className="app-grid">
@@ -341,7 +248,7 @@ END
           <div className="toolbar">
             <div className="flex">
               <button onClick={run} disabled={loading}>
-                {loading ? 'Running...' : 'Run'}
+                {loading ? 'Analyzing...' : 'Run'}
               </button>
               <button 
                 onClick={handleCreateNewFile}
@@ -363,38 +270,64 @@ END
             
             <div className="grow" /> 
             
-            {/* START: Updated View Switcher UI with SingleLine */}
-            <div className="view-switch-container">
+            {/* HYBRID MODE SELECTOR */}
+            <div className="mode-selector-container">
+              {/* Top-Level Mode Buttons */}
+              <div className="mode-selector">
                 <button
-                    className={`view-switch-btn ${viewMode === 'singleLine' ? 'active' : ''}`}
-                    onClick={() => setViewMode('singleLine')}
+                  className={`mode-btn ${analysisMode === 'syntax' ? 'active' : ''}`}
+                  onClick={() => setAnalysisMode('syntax')}
+                  title="View Syntax Analysis Results"
+                >
+                  <span className="mode-icon">🔍</span>
+                  <span>PARSE</span>
+                </button>
+                <button
+                  className={`mode-btn ${analysisMode === 'lexical' ? 'active' : ''}`}
+                  onClick={() => setAnalysisMode('lexical')}
+                  title="View Lexical Analysis Results"
+                >
+                  <span className="mode-icon">🔤</span>
+                  <span>TOKENS</span>
+                  <span className="dropdown-arrow">▼</span>
+                </button>
+              </div>
+
+              {/* Lexical Sub-Tabs (only shown when lexical mode is active) */}
+              {analysisMode === 'lexical' && (
+                <div className="lexical-subtabs">
+                  <button
+                    className={`subtab-btn ${lexicalView === 'singleLine' ? 'active' : ''}`}
+                    onClick={() => setLexicalView('singleLine')}
                     title="Single Line Navigation"
-                >
+                  >
                     LINE
-                </button>
-                <button
-                    className={`view-switch-btn ${viewMode === 'lineByLine' ? 'active' : ''}`}
-                    onClick={() => setViewMode('lineByLine')}
+                  </button>
+                  <button
+                    className={`subtab-btn ${lexicalView === 'lineByLine' ? 'active' : ''}`}
+                    onClick={() => setLexicalView('lineByLine')}
                     title="All Lines View"
-                >
+                  >
                     ALL
-                </button>
-                <button
-                    className={`view-switch-btn ${viewMode === 'table' ? 'active' : ''}`}
-                    onClick={() => setViewMode('table')}
+                  </button>
+                  <button
+                    className={`subtab-btn ${lexicalView === 'table' ? 'active' : ''}`}
+                    onClick={() => setLexicalView('table')}
                     title="Classic Token Table"
-                >
+                  >
                     TABLE
-                </button>
-                <button
-                  className={`view-switch-btn ${viewMode === 'codeBlock' ? 'active' : ''}`}
-                  onClick={() => setViewMode('codeBlock')}
-                  title="Code Blocks View"
-                >
-                  BLOCKS
-                </button>
+                  </button>
+                  <button
+                    className={`subtab-btn ${lexicalView === 'codeBlock' ? 'active' : ''}`}
+                    onClick={() => setLexicalView('codeBlock')}
+                    title="Code Blocks View"
+                  >
+                    BLOCKS
+                  </button>
+                </div>
+              )}
             </div>
-            {/* END: Updated View Switcher UI */}
+            
             {err && <div className="err">{err}</div>}
           </div>
           <div className="editor">
@@ -409,17 +342,28 @@ END
         </div>
         <div className="pane right">
           <div className="outputContainer">
-            {/* Pass the new line state and handler */}
-            <OutputTable 
+            {analysisMode === 'syntax' ? (
+              <ParseResults parseResult={parseResult} code={code} />
+            ) : (
+              <OutputTable 
                 tokens={tokens} 
                 code={code} 
-                viewMode={viewMode} 
+                viewMode={lexicalView} 
                 currentLine={currentLine} 
                 onLineChange={handleLineChange} 
-            />
+              />
+            )}
           </div>
         </div>
       </div>
+
+      {/* Status Bar */}
+      <StatusBar 
+        code={code}
+        tokens={tokens}
+        parseResult={parseResult}
+        analysisTime={analysisTime}
+      />
     </>
   )
 }

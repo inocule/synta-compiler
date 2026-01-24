@@ -92,7 +92,7 @@ body {
 .app-grid { 
   display: grid; 
   grid-template-columns: 1fr 1fr; 
-  height: 100vh; 
+  height: calc(100vh - 32px);   /* ← NEW - makes room for status bar */
   gap: var(--spacing-lg); 
   padding: var(--spacing-xl); 
   box-sizing: border-box; 
@@ -314,8 +314,9 @@ body {
     background: var(--surface-2);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    overflow: hidden;
+    overflow: visible;   /* ← NEW - allows divider to show */
     box-shadow: var(--shadow-sm);
+    align-items: center;   /* ← NEW */
 }
 .view-switch-btn {
     all: unset;
@@ -584,7 +585,6 @@ tbody tr:hover td {
     font-size: 0.9rem;
 }
 
-
 /* Light Theme Token Colors */
 .tok-keyword { color: #b8391a !important; font-weight: 700 !important; }
 .tok-identifier { color: #1e6b8c !important; }
@@ -602,3 +602,46 @@ tbody tr:hover td {
 [data-theme="dark"] .tok-comment { color: #6d5a5e !important; font-style: italic !important; }
 [data-theme="dark"] .tok-operator { color: #ffd93d !important; font-weight: 600 !important; }
 [data-theme="dark"] .tok-illegal { background: rgba(255, 107, 107, 0.2) !important; color: #ff6b6b !important; }
+
+
+/* View Group Styling */
+.view-group {
+  display: inline-flex;
+}
+
+.view-group .view-switch-btn:first-child {
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+}
+
+.view-group .view-switch-btn:last-child {
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+}
+
+.view-switch-btn.inactive-group {
+  opacity: 0.5;
+}
+
+.view-switch-btn.inactive-group:not(:hover) {
+  background: var(--surface-2);
+}
+
+/* Error message styling */
+.err {
+  padding: 6px 12px;
+  background: var(--error);
+  color: #ffffff;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: var(--spacing-md);
+  animation: shake 0.3s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
