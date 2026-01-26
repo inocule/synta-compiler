@@ -9,6 +9,7 @@ type Props = {
     viewMode: ViewMode
     currentLine: number
     onLineChange: (direction: 'up' | 'down') => void
+    onViewModeChange: (mode: ViewMode) => void
 }
 
 
@@ -397,36 +398,49 @@ function SingleLineViewer({ tokens, code, currentLine, onLineChange, whitespaceC
 export default function OutputTable(props: Props) {
     const whitespaceCounts = useMemo(() => calculateWhitespaceCount(props.code), [props.code])
 
-    const titles: Record<ViewMode, string> = {
-        table: 'Tokens (Classic Table)',
-        lineByLine: 'Tokens (All Lines View)',
-        singleLine: `Tokens (Line ${props.currentLine} / ${props.code.split('\n').length})`,
-        codeBlock: 'Code Blocks View'
-    }
-
-    // Debug: Log tokens to console
-    React.useEffect(() => {
-        console.log('Tokens received:', props.tokens)
-        console.log('Total tokens:', props.tokens.length)
-        console.log('Filtered tokens:', filterNewlines(props.tokens).length)
-    }, [props.tokens])
-
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', fontWeight: 600 }}>
-                {titles[props.viewMode]}
+            {/* Result Tabs */}
+            <div className="result-tabs">
+                <button
+                    className={`result-tab ${props.viewMode === 'table' ? 'active' : ''}`}
+                    onClick={() => props.onViewModeChange('table')}
+                >
+                    Table
+                </button>
+                <button
+                    className={`result-tab ${props.viewMode === 'singleLine' ? 'active' : ''}`}
+                    onClick={() => props.onViewModeChange('singleLine')}
+                >
+                    Line
+                </button>
+                <button
+                    className={`result-tab ${props.viewMode === 'lineByLine' ? 'active' : ''}`}
+                    onClick={() => props.onViewModeChange('lineByLine')}
+                >
+                    All
+                </button>
+                <button
+                    className={`result-tab ${props.viewMode === 'codeBlock' ? 'active' : ''}`}
+                    onClick={() => props.onViewModeChange('codeBlock')}
+                >
+                    Blocks
+                </button>
             </div>
             
-            {props.viewMode === 'table' && <ClassicTokenTable tokens={props.tokens} whitespaceCounts={whitespaceCounts} />}
-            {props.viewMode === 'lineByLine' && <LineByLineViewer tokens={props.tokens} code={props.code} whitespaceCounts={whitespaceCounts} />}
-            {props.viewMode === 'singleLine' && <SingleLineViewer {...props} whitespaceCounts={whitespaceCounts} />}
-            {props.viewMode === 'codeBlock' && <CodeBlockViewer tokens={props.tokens} code={props.code} />}
+            {/* Content */}
+            <div className="outputContainer">
+                {props.viewMode === 'table' && <ClassicTokenTable tokens={props.tokens} whitespaceCounts={whitespaceCounts} />}
+                {props.viewMode === 'lineByLine' && <LineByLineViewer tokens={props.tokens} code={props.code} whitespaceCounts={whitespaceCounts} />}
+                {props.viewMode === 'singleLine' && <SingleLineViewer {...props} whitespaceCounts={whitespaceCounts} />}
+                {props.viewMode === 'codeBlock' && <CodeBlockViewer tokens={props.tokens} code={props.code} />}
 
-            {props.tokens.length === 0 && props.code.trim().length === 0 && (
-                <div style={{ padding: '20px', color: 'var(--muted)', textAlign: 'center' }}>
-                    Run the code analyzer to see the lexical output here.
-                </div>
-            )}
+                {props.tokens.length === 0 && props.code.trim().length === 0 && (
+                    <div style={{ padding: '20px', color: 'var(--muted)', textAlign: 'center' }}>
+                        Run the code analyzer to see the lexical output here.
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

@@ -651,6 +651,39 @@ tbody tr:hover td {
 [data-theme="dark"] .tok-operator { color: #ffd93d !important; font-weight: 600 !important; }
 [data-theme="dark"] .tok-illegal { background: rgba(255, 107, 107, 0.2) !important; color: #ff6b6b !important; }
 
+/* Lexical Analyzer Specific Styles */
+.lexical-analyzer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.lexical-analyzer .app-grid {
+  flex: 1;
+  min-height: 0;
+}
+
+.lexical-analyzer .status-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-xl);
+  background: var(--panel);
+  border-top: 2px solid var(--border);
+  font-size: 0.85rem;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  color: var(--text-secondary);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.lexical-analyzer .status-item {
+  font-weight: 600;
+}
+
+.lexical-analyzer .status-separator {
+  color: var(--border);
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
   .app-grid {

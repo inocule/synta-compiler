@@ -25,6 +25,10 @@ const LexicalAnalyzer: React.FC<LexicalAnalyzerProps> = ({ theme }) => {
   // State for line navigation in singleLine mode
   const [currentLine, setCurrentLine] = useState(1)
 
+  // Calculate stats for status bar
+  const lineCount = code.split('\n').length
+  const tokenCount = tokens.length
+
   // Handle line change for singleLine mode
   const handleLineChange = (direction: 'up' | 'down') => {
     const maxLine = code.split('\n').length
@@ -211,86 +215,62 @@ END
   }
 
   return (
-    <div className="app-grid">
-      <div className="pane left">
-        <div className="toolbar">
-          <div className="flex">
-            <button onClick={run} disabled={loading}>
-              {loading ? 'Running...' : 'Run'}
-            </button>
-            <button 
-              onClick={handleCreateNewFile}
-              title="Create a new .synta file"
-              className="file-btn"
-            >
-              📄 PSI
-            </button>
-            <label className="file-btn-label" title="Upload a .synta file">
-              📂 OPEN
-              <input 
-                type="file" 
-                accept=".synta" 
-                onChange={handleFileUpload}
-                style={{ display: 'none' }}
-              />
-            </label>
+    <div className="lexical-analyzer">
+      <div className="app-grid">
+        <div className="pane left">
+          <div className="toolbar">
+            <div className="flex">
+              <button onClick={run} disabled={loading}>
+                {loading ? 'Running...' : '▶ RUN'}
+              </button>
+              <button 
+                onClick={handleCreateNewFile}
+                title="Create a new .synta file"
+                className="file-btn"
+              >
+                📄 PSI
+              </button>
+              <label className="file-btn-label" title="Upload a .synta file">
+                📂 OPEN
+                <input 
+                  type="file" 
+                  accept=".synta" 
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }}
+                />
+              </label>
+            </div>
+            {err && <div className="err">{err}</div>}
           </div>
-          
-          <div className="grow" /> 
-          
-          {/* View Switcher UI */}
-          <div className="view-switch-container">
-              <button
-                  className={`view-switch-btn ${viewMode === 'singleLine' ? 'active' : ''}`}
-                  onClick={() => setViewMode('singleLine')}
-                  title="Single Line Navigation"
-              >
-                  LINE
-              </button>
-              <button
-                  className={`view-switch-btn ${viewMode === 'lineByLine' ? 'active' : ''}`}
-                  onClick={() => setViewMode('lineByLine')}
-                  title="All Lines View"
-              >
-                  ALL
-              </button>
-              <button
-                  className={`view-switch-btn ${viewMode === 'table' ? 'active' : ''}`}
-                  onClick={() => setViewMode('table')}
-                  title="Classic Token Table"
-              >
-                  TABLE
-              </button>
-              <button
-                className={`view-switch-btn ${viewMode === 'codeBlock' ? 'active' : ''}`}
-                onClick={() => setViewMode('codeBlock')}
-                title="Code Blocks View"
-              >
-                BLOCKS
-              </button>
+          <div className="editor">
+            <EditorPane 
+              code={code} 
+              setCode={setCode} 
+              tokens={tokens} 
+              onRun={run}
+              theme={theme}
+            />
           </div>
-          {err && <div className="err">{err}</div>}
         </div>
-        <div className="editor">
-          <EditorPane 
-            code={code} 
-            setCode={setCode} 
-            tokens={tokens} 
-            onRun={run}
-            theme={theme}
-          />
-        </div>
-      </div>
-      <div className="pane right">
-        <div className="outputContainer">
+        <div className="pane right">
           <OutputTable 
               tokens={tokens} 
               code={code} 
               viewMode={viewMode} 
               currentLine={currentLine} 
-              onLineChange={handleLineChange} 
+              onLineChange={handleLineChange}
+              onViewModeChange={setViewMode}
           />
         </div>
+      </div>
+
+      {/* Status Bar */}
+      <div className="status-bar">
+        <span className="status-item">Lines: {lineCount}</span>
+        <span className="status-separator">|</span>
+        <span className="status-item">Tokens: {tokenCount}</span>
+        <span className="status-separator">|</span>
+        <span className="status-item">Parse: Not analyzed</span>
       </div>
     </div>
   )
