@@ -14,7 +14,7 @@ interface LexicalAnalyzerProps {
 }
 
 const LexicalAnalyzer: React.FC<LexicalAnalyzerProps> = ({ theme }) => {
-  const [code, setCode] = useState<string>('// type code here\n')
+  const [code, setCode] = useState<string>('!> type code here\n')
   const [tokens, setTokens] = useState<TokenDTO[]>([])
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState<string | null>(null)

@@ -1,4 +1,4 @@
-# Synta Lexical Analyzer
+# Synta Compiler
 
 > An experimental lexer for an AI-native programming language designed for human–AI collaboration, agentic task execution, and deterministic reasoning.
 
@@ -6,7 +6,7 @@ Synta emphasizes static typing, concurrency primitives, intent-level debugging, 
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -54,7 +54,7 @@ DATA FLOW:
 
 ---
 
-## ✨ Core Features
+## Core Features
 
 ### Lexical Analysis
 - **Tokens**: Identifiers, numbers (int/float), strings, operators, delimiters
@@ -74,33 +74,38 @@ DATA FLOW:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-synta-lexical/
-├── backend-server/
-│   └── main.go              # Go HTTP server
+synta-compiler/
+├── backend/
+│   ├── main.go              # Go HTTP server (Connects both Analyzers to the frontend)
+│   ├── lexer/
+│   │   └── lexer.go         # Core tokenizer (Lexical Analyzer)
+│   ├── parser/
+│   │   └── parser.go        # Syntax parser (Syntax Analyzer)
+│   ├── token/
+│   │   └── token.go         # Token types & keywords
+│   └── go.mod
 ├── frontend/
 │   ├── src/
-│   │   ├── Components/
+│   │   ├── components/
 │   │   │   ├── EditorPane.tsx      # Code input (left)
 │   │   │   └── OutputTable.tsx     # Token output (right)
+│   │   ├── LexicalAnalyzer.tsx     # Lexer interface
+│   │   ├── SyntacticalAnalyzer.tsx # Parser interface
 │   │   ├── App.tsx
 │   │   ├── main.tsx
-│   │   └── types.ts
+│   │   ├── types.ts
+│   │   └── api.ts
 │   ├── package.json
 │   └── vite.config.ts
-├── lexer/
-│   ├── lexer.go             # Core tokenizer
-├── token/
-│   └── token.go             # Token types & keywords
-├── go.mod
 └── README.md
 ```
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 ```bash
@@ -112,14 +117,14 @@ node --version # Requires Node.js 16+
 
 **1. Start Backend Server**
 ```bash
-cd synta-lexical/cmd/server
-go run main.go
+cd .\synta-compiler\backend
+go run .
 # Server running at http://localhost:8080
 ```
 
 **2. Start Frontend (New Terminal)**
 ```bash
-cd synta-lexical/frontend
+cd .\synta-compiler\frontend
 npm install           # First time only
 npm run dev
 # UI available at http://localhost:5173
@@ -128,9 +133,11 @@ npm run dev
 **3. Open Browser**
 Navigate to `http://localhost:5173` and start tokenizing!
 
+**Note:** Build the backend for every backend change
+
 ---
 
-## 📝 Language Syntax Examples
+## Language Syntax Examples
 
 ### Agent Definition
 ```synta
@@ -205,7 +212,7 @@ model, tokenizer =: unsloth.FastLanguageModel.from_pretrained(
 
 ---
 
-## 🎯 Language Design Principles
+## Language Design Principles
 
 ### 1. Static & Strong Typing
 - Variables use `name:type` annotation
@@ -246,7 +253,7 @@ model, tokenizer =: unsloth.FastLanguageModel.from_pretrained(
 
 ---
 
-## 🔧 Extending the Lexer
+## Extending the Lexer
 
 ### Add Keywords
 ```go
@@ -279,7 +286,7 @@ case '@':
 
 ---
 
-## 📊 Token Types Reference
+## Token Types Reference
 
 | Category | Examples |
 |----------|----------|
@@ -292,7 +299,7 @@ case '@':
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 cd lexer
@@ -301,13 +308,13 @@ go test -v
 
 ---
 
-## 📜 License
+## License
 
 Experimental - Educational Use
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 This is an experimental language design. Contributions welcome for:
 - Additional AI-native keywords
@@ -317,4 +324,4 @@ This is an experimental language design. Contributions welcome for:
 
 ---
 
-**Built for the future of human–AI collaborative programming** 🚀
+**Built for the future of human–AI collaborative programming**
