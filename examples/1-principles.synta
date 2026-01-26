@@ -1,0 +1,220 @@
+!> ========================================
+!> Principle 1: INTENT-AWARE PSEUDOCODAL DEBUGGING
+!> ========================================
+
+@allow pseudo(anno, trace, breakpoint, 15)
+
+debug {
+    config: {
+        model: "cloud/gpt-5.1-codex-mini",
+        mode: "intent_trace",
+        output_format: "markdown",
+        log_level: "verbose",
+        track_concurrency: true
+    },
+    
+    outputs: {
+        intent_log: "./debug/ai-agents_psi.md",
+        execution_flow: "./debug/ai-agent_flow_diagram.syps",
+        performance_metrics: "./debug/metrics.json"
+    },
+    
+    breakpoints: {
+        on_concur_deadlock: true,
+        on_loop: [true, 5],
+        on_timeout: [true, 30]
+    }
+}
+
+!> ========================================
+!>   Principle 2-3: AGENTIC_INIT-TASKING
+!>       -CONCURRENCY DEFINITIONS
+!> ========================================
+
+@agent DataProcessor {
+    role: "Data analysis and transformation specialist",
+    tools: [pandas_toolkit, numpy_ops, data_validator],
+    model: "local/llama-3.1-8b.gguf",
+    mode: "hybrid",
+    
+    !> Agent-level system prompt for consistent behavior
+    sys_prompt: """
+        You are a data analysis specialist with expertise in statistical methods.
+        
+        Core responsibilities:
+        - Load and validate datasets with rigorous error checking
+        - Perform statistical analysis (descriptive, correlation, outlier detection)
+        - Flag data quality issues immediately
+        - Generate concise, actionable summaries
+        
+        Output format: Always return structured JSON with fields:
+        {status, data, warnings, confidence_score}
+        
+        Error handling: Never fail silently. Emit warnings for edge cases.
+    """,
+    
+    concurrency: {
+        max_req: 5,
+        timeout: 120s,
+        prio: "high",
+        pool: auto
+    }
+    
+    tasks: {
+        analyze_dataset: {
+            input: csv_file,
+            action: "Perform statistical analysis and anomaly detection",
+            execution: parallel,
+            retry: { enabled: true, max: 3 }
+        },
+        
+        load_preprocess: {
+            input: filepath,
+            action: "Load and clean data",
+            execution: sequential,
+            error_handling: emit_warning
+        }
+    }
+}
+
+@agent CodeGenerator {
+    role: "Code synthesis and optimization assistant",
+    tools: [ast_parser, code_formatter, syntax_checker],
+    model: "cloud/claude-opus-4.5",
+    mode: "cloud",
+    
+    sys_prompt: """
+        You are an expert Python code generator specializing in data visualization.
+        
+        Guidelines:
+        - Generate clean, PEP-8 compliant code
+        - Include comprehensive docstrings
+        - Optimize for readability first, performance second
+        - Use matplotlib/seaborn for visualizations
+        - Always validate syntax before returning
+        
+        Security: Never generate code with eval(), exec(), or unsafe file operations.
+        
+        Output: Return code as a string with embedded comments explaining logic.
+    """,
+    
+    concurrency: {
+        max_req: 3,
+        timeout: 90s,
+        prio: "medium",
+        pool: shared
+    }
+    
+    tasks: {
+        generate_report_code: {
+            input: analysis_results,
+            action: "Generate Python visualization code from analysis",
+            execution: parallel,
+            depends_on: [DataProcessor.analyze_dataset]
+        },
+        
+        validate_optimize: {
+            input: generated_code,
+            action: "Validate syntax and optimize for performance",
+            execution: sequential,
+            depends_on: [generate_report_code]
+        }
+    }
+}
+
+!> ========================================
+!> GLOBAL CONCURRENCY INFRASTRUCTURE
+!> ========================================
+
+concurrency: {
+    pool: create_pool(8),
+    store: {},
+    errors: [],
+    coordination: { deadlock_detect: true, timeout: retry, limit: 1 }
+}
+
+!> ========================================
+!> AGENT TASK EXECUTION WITH CONCURRENCY
+!> ========================================
+
+async fn load_and_preprocess(filepath: string) => object {
+    try {
+        data =: await DataProcessor.tasks.load_preprocess.run(filepath);
+        
+        if data.rows < 10 {
+            emit DataWarning { message: "Dataset too small", rows: data.rows };
+        }
+        
+        return data;
+        
+    } catch error {
+        concurrency.errors.append({
+            agent: "DataProcessor",
+            task: "load_preprocess",
+            error: error,
+            timestamp: now()
+        });
+        return null;
+    }
+}
+
+async fn perform_analysis(data: object) => object {
+    analysis_types =: ["descriptive", "correlation", "outlier", "trend"];
+    
+    tasks =: [];
+    for type in analysis_types {
+        item =: DataProcessor.tasks.analyze_dataset.run({ data, analysis_type: type });
+        tasks.append(item);
+    }
+    
+    return await gather(tasks);
+}
+
+async fn generate_visualization_code(analysis: object) => string {
+    code =: await CodeGenerator.tasks.generate_report_code.run(analysis);
+    return await CodeGenerator.tasks.validate_optimize.run(code);
+}
+
+!> ========================================
+!> ORCHESTRATION WITH AGENT-LEVEL CONCURRENCY
+!> ========================================
+
+async fn run_dual_agent_system(dataset_path: string) => object {
+    print("Starting dual-agent system");
+    print("=" * 50);
+    
+    !> Pipeline: load → analyze → generate → report
+    data =: await load_and_preprocess(dataset_path);
+    if data == null {
+        return { status: "failed", error: "Preprocessing failed" };
+    }
+    
+    analysis =: await perform_analysis(data);
+    code =: await generate_visualization_code(analysis);
+    report =: await DataProcessor.tasks.generate_summary.run({ analysis, code });
+    
+    print("=" * 50);
+    print("System completed");
+    
+    return {
+        data, analysis, code, report,
+        metrics: {
+            dataprocessor: DataProcessor.concurrency.pool.stats(),
+            codegenerator: CodeGenerator.concurrency.pool.stats(),
+            global: concurrency.pool.stats()
+        }
+    };
+}
+
+!> ========================================
+!> EXECUTION ENTRY POINT
+!> ========================================
+
+async fn main() {
+    results =: await run_dual_agent_system("./data/sales_data.csv");
+    
+    print("Results: ${results.report}");
+    print("Metrics: ${results.metrics}");
+}
+
+await main();

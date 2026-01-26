@@ -1,6 +1,7 @@
 export type TokenDTO = {
   lexeme: string
   type: string
+  semanticGroup: string
   line: number
   column: number
   value?: string

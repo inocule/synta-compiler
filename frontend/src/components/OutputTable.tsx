@@ -249,7 +249,7 @@ function CodeBlockViewer({ tokens, code }: { tokens: TokenDTO[], code: string })
                                 </div>
                                 {block.tokens.map((t, idx) => (
                                     <div key={idx} className="token-item" style={{ fontSize: '0.7rem' }}>
-                                        <span className="token-type">{t.type}</span>
+                                        <span className="token-type">{t.semanticGroup}</span>
                                         <span className="token-lexeme">"{t.lexeme}"</span>
                                     </div>
                                 ))}
@@ -280,13 +280,13 @@ function ClassicTokenTable({ tokens, whitespaceCounts }: { tokens: TokenDTO[], w
             </div>
             <table>
                 <thead>
-                    <tr><th>Lexeme</th><th>Token</th><th>Line</th><th>WS Count</th></tr>
+                    <tr><th>Lexeme</th><th>Semantic Group</th><th>Line</th><th>WS Count</th></tr>
                 </thead>
                 <tbody>
                     {visible.map((t, i) => (
                         <tr key={i}>
                             <td>{t.lexeme}</td>
-                            <td>{t.type}</td>
+                            <td>{t.semanticGroup}</td>
                             <td>{t.line}</td>
                             <td>{whitespaceCounts[t.line - 1] ?? 0}</td>
                         </tr>

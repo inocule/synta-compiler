@@ -11,11 +11,11 @@ function App() {
   const [activeTab, setActiveTab] = useState<AnalyzerType>('syntactical')
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
-  // Load saved theme on mount 
+  // Force light theme on mount 
   useEffect(() => {
-    const savedTheme = (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
-    setTheme(savedTheme)
-    document.body.setAttribute('data-theme', savedTheme)
+    setTheme('light')
+    document.body.setAttribute('data-theme', 'light')
+    localStorage.setItem('theme', 'light')
   }, [])
 
   // Toggle theme function 

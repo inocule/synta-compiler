@@ -18,11 +18,12 @@ type analyzeReq struct {
 }
 
 type tokenDTO struct {
-	Lexeme string      `json:"lexeme"`
-	Type   string      `json:"type"`
-	Line   int         `json:"line"`
-	Column int         `json:"column"`
-	Extra  interface{} `json:"extra,omitempty"`
+	Lexeme        string      `json:"lexeme"`
+	Type          string      `json:"type"`
+	SemanticGroup string      `json:"semanticGroup"`
+	Line          int         `json:"line"`
+	Column        int         `json:"column"`
+	Extra         interface{} `json:"extra,omitempty"`
 }
 
 type analyzeResp struct {
@@ -84,10 +85,11 @@ func analyzeHandler(w http.ResponseWriter, r *http.Request) {
 			typeName = "UNKNOWN"
 		}
 		tokenDTOs = append(tokenDTOs, tokenDTO{
-			Lexeme: t.Lexeme,
-			Type:   typeName,
-			Line:   t.Line,
-			Column: t.Column,
+			Lexeme:        t.Lexeme,
+			Type:          typeName,
+			SemanticGroup: t.Type.GetSemanticGroup(),
+			Line:          t.Line,
+			Column:        t.Column,
 		})
 	}
 

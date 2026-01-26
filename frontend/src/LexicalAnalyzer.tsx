@@ -65,8 +65,7 @@ const LexicalAnalyzer: React.FC<LexicalAnalyzerProps> = ({ theme }) => {
 
 ## Metadata
 - **File**: ai_agents.synta
-- **Author**: inocule on 2025-12-06
-- **Last Modified**: 2025-12-06 02:15:00
+- **Author**: inocule on 2026-01-27
 
 ## Purpose
 Define AI agents, their tools, execution settings, and demonstrate example tasks.
@@ -74,7 +73,7 @@ Provide detailed context for AI reasoning, debugging, and concurrency tracking.
 
 ## 🏗️ System Architecture
 
-
+\`\`\`
 ┌─────────────────────────────────────────────────────────────┐
 │                     AI AGENT SYSTEM                         │
 ├─────────────────────────────────────────────────────────────┤
@@ -86,7 +85,7 @@ Provide detailed context for AI reasoning, debugging, and concurrency tracking.
 │           │                                 │               │
 │           │         ┌──────────────┐        │               │
 │           └────────►│  TASK POOL   │◄───────┘               │
-│                     │  (4 Workers) │                        │
+│                     │  (2 Workers) │                        │
 │                     └──────┬───────┘                        │
 │                            │                                │
 │                     ┌──────▼───────┐                        │
@@ -94,11 +93,11 @@ Provide detailed context for AI reasoning, debugging, and concurrency tracking.
 │                     │  AI INSIGHTS │                        │
 │                     └──────────────┘                        │
 └─────────────────────────────────────────────────────────────┘
-
+\`\`\`
 ## 🤖 Agent Configurations
 
 ### STEP 1: AICoder Agent Definition
-
+\`\`\`
 ╔════════════════════════════════════════════════════════╗
 ║                   AICODER AGENT                        ║
 ╠════════════════════════════════════════════════════════╣
@@ -121,9 +120,9 @@ Provide detailed context for AI reasoning, debugging, and concurrency tracking.
 ║  • Task size validation                                ║
 ║  • Malformed code edge cases                           ║
 ╚════════════════════════════════════════════════════════╝
-
+\`\`\`
 ### STEP 2: ClaudeOpus Agent Definition
-
+\`\`\`
 ╔════════════════════════════════════════════════════════╗
 ║                CLAUDEOPUS AGENT                        ║
 ╠════════════════════════════════════════════════════════╣
@@ -134,7 +133,7 @@ Provide detailed context for AI reasoning, debugging, and concurrency tracking.
 ╠════════════════════════════════════════════════════════╣
 ║ TOOLS:                                                 ║
 ║  ├─ 📝 text_summarizer                                ║
-║  ├─ 🔍 code_explainer                                  ║
+║  ├─ 🔍 code_explainer                                 ║
 ║  └─ 💡 idea_generator                                  ║
 ╠════════════════════════════════════════════════════════╣
 ║ SETTINGS:                                              ║
@@ -148,7 +147,7 @@ Provide detailed context for AI reasoning, debugging, and concurrency tracking.
 ║  • Type error detection                                ║
 ║  • Hallucination analysis                              ║
 ╚════════════════════════════════════════════════════════╝
-
+\`\`\`
 ## Execution Flow (Pseudocode)
 START
   Initialize agents (AICoder, ClaudeOpus)
@@ -166,7 +165,7 @@ START
 END
 
 ## Revision History
-- 2025-12-06: Initial generation
+- 2026-01-27: Initial generation
 - AI Insight: Agents designed for hybrid local/cloud execution; task example demonstrates intent and concurrency tracking
 `;
 

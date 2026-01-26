@@ -1,4 +1,6 @@
 // lexer.go
+// lexical analyzer
+
 package lexer
 
 import (
@@ -12,6 +14,13 @@ type Lexer struct {
 	line   int
 	column int
 	tokens []token.Token
+}
+
+// Single-character operator mapping
+var singleCharOps = map[byte]token.TokenType{
+	'(': token.LPAREN, ')': token.RPAREN, '[': token.LBRACKET, ']': token.RBRACKET,
+	'{': token.LBRACE, '}': token.RBRACE, ',': token.COMMA, '^': token.BITWISE_XOR,
+	';': token.STATEMENT_END, '$': token.DOLLAR,
 }
 
 func New(input string) *Lexer {
@@ -96,22 +105,49 @@ func (l *Lexer) readNumber() (string, token.TokenType) {
 
 func (l *Lexer) readString() string {
 	quote := l.advance() // consume opening quote
+
+	// Check for triple-quoted string
+	isTripleQuoted := false
+	if l.pos+1 < len(l.input) && l.input[l.pos] == quote && l.input[l.pos+1] == quote {
+		isTripleQuoted = true
+		l.advance() // consume second quote
+		l.advance() // consume third quote
+	}
+
 	start := l.pos
 
-	for l.pos < len(l.input) && l.input[l.pos] != quote {
-		if l.input[l.pos] == '\\' && l.pos+1 < len(l.input) {
-			l.advance() // consume backslash
-			l.advance() // consume escaped character
-		} else {
+	if isTripleQuoted {
+		// For triple-quoted strings, look for closing """
+		for l.pos < len(l.input) {
+			if l.pos+2 < len(l.input) && l.input[l.pos] == quote && l.input[l.pos+1] == quote && l.input[l.pos+2] == quote {
+				str := l.input[start:l.pos]
+				l.advance() // consume first closing quote
+				l.advance() // consume second closing quote
+				l.advance() // consume third closing quote
+				return str
+			}
 			l.advance()
 		}
+	} else {
+		// For regular strings, look for single closing quote
+		for l.pos < len(l.input) && l.input[l.pos] != quote {
+			if l.input[l.pos] == '\\' && l.pos+1 < len(l.input) {
+				l.advance() // consume backslash
+				l.advance() // consume escaped character
+			} else {
+				l.advance()
+			}
+		}
+
+		str := l.input[start:l.pos]
+		if l.pos < len(l.input) {
+			l.advance() // consume closing quote
+		}
+		return str
 	}
 
-	str := l.input[start:l.pos]
-	if l.pos < len(l.input) {
-		l.advance() // consume closing quote
-	}
-	return str
+	// Unclosed triple-quoted string
+	return l.input[start:l.pos]
 }
 
 // Synta single-line comment: !>
@@ -195,6 +231,8 @@ func (l *Lexer) Tokenize() []token.Token {
 					l.addToken(token.AT_INTENT, "@intent", line, column)
 				case "explain":
 					l.addToken(token.AT_EXPLAIN, "@explain", line, column)
+				case "allow":
+					l.addToken(token.DECORATOR, "@allow", line, column)
 				default:
 					l.addToken(token.DECORATOR, "@"+ident, line, column)
 				}
@@ -226,11 +264,13 @@ func (l *Lexer) Tokenize() []token.Token {
 		}
 
 		// Handle operators and delimiters
-		switch ch {
-		case ';':
+		if tok, ok := singleCharOps[ch]; ok {
 			l.advance()
-			l.addToken(token.STATEMENT_END, ";", line, column)
+			l.addToken(tok, string(ch), line, column)
+			continue
+		}
 
+		switch ch {
 		case '+':
 			l.advance()
 			if l.peek(0) == '+' {
@@ -296,8 +336,6 @@ func (l *Lexer) Tokenize() []token.Token {
 			} else if l.peek(0) == '>' {
 				l.advance()
 				l.addToken(token.FAT_ARROW, "=>", line, column)
-			} else {
-				l.addToken(token.ILLEGAL, "=", line, column)
 			}
 
 		case ':':
@@ -305,6 +343,9 @@ func (l *Lexer) Tokenize() []token.Token {
 			if l.peek(0) == '=' {
 				l.advance()
 				l.addToken(token.BIND_ASSIGN, ":=", line, column)
+			} else if l.peek(0) == ':' {
+				l.advance()
+				l.addToken(token.DOUBLE_COLON, "::", line, column)
 			} else {
 				l.addToken(token.COLON, ":", line, column)
 			}
@@ -350,59 +391,25 @@ func (l *Lexer) Tokenize() []token.Token {
 			if l.peek(0) == '|' {
 				l.advance()
 				l.addToken(token.OR, "||", line, column)
+			} else if l.peek(0) == '>' {
+				l.advance()
+				if l.peek(0) == '>' {
+					l.advance()
+					l.addToken(token.PIPE_PARALLEL, "|>>", line, column)
+				} else {
+					l.addToken(token.PIPE_RIGHT, "|>", line, column)
+				}
 			} else {
 				l.addToken(token.PIPE_OP, "|", line, column)
 			}
 
-		case '^':
-			l.advance()
-			l.addToken(token.BITWISE_XOR, "^", line, column)
-
-		case '(':
-			l.advance()
-			l.addToken(token.LPAREN, "(", line, column)
-
-		case ')':
-			l.advance()
-			l.addToken(token.RPAREN, ")", line, column)
-
-		case '[':
-			l.advance()
-			l.addToken(token.LBRACKET, "[", line, column)
-
-		case ']':
-			l.advance()
-			l.addToken(token.RBRACKET, "]", line, column)
-
-		case '{':
-			l.advance()
-			l.addToken(token.LBRACE, "{", line, column)
-
-		case '}':
-			l.advance()
-			l.addToken(token.RBRACE, "}", line, column)
-
-		case ',':
-			l.advance()
-			l.addToken(token.COMMA, ",", line, column)
-
 		case '.':
 			l.advance()
-			// Check if this is a function like .config
-			if unicode.IsLetter(rune(l.peek(0))) || l.peek(0) == '_' {
-				ident := l.readIdentifier()
-				l.addToken(token.IDENTIFIER, "."+ident, line, column)
-			} else {
-				l.addToken(token.DOT, ".", line, column)
-			}
+			l.addToken(token.DOT, ".", line, column)
 
 		case '\n':
 			l.advance()
 			l.addToken(token.NEWLINE, "\\n", line, column)
-
-		case '$':
-			l.advance()
-			l.addToken(token.DOLLAR, "$", line, column)
 
 		default:
 			l.advance()

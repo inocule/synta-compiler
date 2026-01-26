@@ -1,7 +1,5 @@
 # Synta-Compiler
 
-This is BSCS 3-2's Group 1 culmination project for Principles of Programming Language
-
 Quick start (PowerShell):
 
 ```powershell

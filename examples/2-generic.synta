@@ -1,0 +1,139 @@
+!> ========================================
+!> AGENT DEFINITION
+!> ========================================
+
+@agent AICoder {
+    role: "GitHub-enabled coding assistant",
+    tools: [github_mcp, slm_chatbot, pdf_scanner],
+    model: "local/llama-3.1-8b.gguf",
+    mode: "hybrid",
+    sys_prompt: "Code assistant with GitHub access and debugging capabilities",
+    concurrency: { max_req: 3, timeout: 60s, prio: "medium" },
+    tasks: {
+        fix_code: { input: text, action: "Debug and fix code", execution: sequential },
+        analyze: { input: text, action: "Analyze text", execution: parallel },
+        summarize: { input: text, action: "Generate summary", depends_on: [analyze] }
+    }
+}
+
+!> ========================================
+!> MULTI-DECLARATIONS (Unique Feature)
+!> ========================================
+
+bind: { x: 10, y: 20, counter: 0 }
+
+arrays: {
+    numbers: [1, 2, 3, 4, 5],
+    names: ["Alice", "Bob", "Charlie"],
+    statuses: [true, false, true]
+}
+
+const: { PI: 3.14, MAX_RETRIES: 5, TIMEOUT: 30s }
+
+store: { session: "abc123", history: [], context: {} }
+
+!> ========================================
+!> FUNCTIONS WITH BLOCKS
+!> ========================================
+
+fn calculate(a: int, b: int) -> int {
+    if a > b {
+        return a + b
+    } else {
+        return a - b
+    }
+}
+
+!> Agent-aware function shorthand
+fn@agent query(prompt: string) -> string {
+    AICoder.tasks.analyze(prompt)
+}
+
+!> ========================================
+!> CONCISE CONTROL FLOW
+!> ========================================
+
+!> Streamlined loops
+loop while i from 0 to 5 { print("Count: ${i}"); }
+loop foreach name in arrays.names { print("Hello, ${name}"); }
+loop parallel num in arrays.numbers { print("Processing: ${num * 2}"); }
+
+!> Pattern matching
+switch store.session {
+    case "abc123" { print("Valid session") }
+    case _ { print("Unknown") }
+}
+
+!> ========================================
+!> PIPELINE OPERATORS
+!> ========================================
+
+async fn process_single(text: string) -> string {
+    !> |> for sequential pipeline
+    result =: text |> AICoder.tasks.analyze |> AICoder.tasks.summarize;
+    return result;
+}
+
+async fn process_batch(texts: array) -> array {
+    !> |>> for parallel pipeline
+    results =: texts |>> AICoder.tasks.analyze;
+    return results;
+}
+
+!> ========================================
+!> AGENT ORCHESTRATION
+!> ========================================
+
+async fn orchestrate() -> void {
+    !> Await all tasks in parallel
+    results =: await all {
+        task1: AICoder.tasks.fix_code("debug this")
+        task2: AICoder.tasks.analyze("analyze this")
+        task3: AICoder.tasks.summarize("sum this")
+    }
+    !> Race condition - first to complete wins
+    fastest =: await race {
+        first: AICoder.tasks.analyze("test")
+        second: AICoder.tasks.fix_code("test")
+    }
+    print("Results: ${results}, Fastest: ${fastest}");
+}
+
+!> ========================================
+!> EVENT-DRIVEN & REACTIVE
+!> ========================================
+
+!> Event listeners
+on AICoder.completed (result) -> store.history.append(result)
+on AICoder.error (err) -> print("Error: ${err}")
+
+!> Reactive watch
+watch store.counter (val) -> if val > 100 print("Counter threshold reached!")
+
+!> ========================================
+!> CONTEXT MANAGEMENT
+!> ========================================
+
+with context { user: "dev_123", session: store.session } {
+    !> All agent calls inherit this context
+    r1 =: "Fix bug" |> AICoder.tasks.fix_code
+    r2 =: "Explain error" |> AICoder.tasks.analyze
+}
+
+!> State persistence
+snapshot AICoder.state -> "./state.json"
+restore AICoder from "./state.json"
+
+!> ========================================
+!> MAIN EXECUTION
+!> ========================================
+
+async fn main() -> void {
+    await process_single("Analyze this code")
+    await process_batch(["text1", "text2", "text3"])
+    await orchestrate()
+    sum =: calculate(15, 5)
+    print("Sum: ${sum}")
+}
+
+await main()

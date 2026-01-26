@@ -1,6 +1,7 @@
 # Synta Compiler
 
-> An experimental lexer for an AI-native programming language designed for human–AI collaboration, agentic task execution, and deterministic reasoning.
+>  a Mini-Compiler for Principles of Programming Language prepared by the students of BSCS 3-2, Group 1 as the final requirement for PPL. A lexical-syntax analyzer for an AI-native programming language designed for human–AI collaboration, agentic task execution, and deterministic reasoning.  Under the guidance of our professor, Mr. Montaigne Garcia Molejon, the group successfully developed Synta, a mini programming language designed to meet the objectives of the course.
+
 
 Synta emphasizes static typing, concurrency primitives, intent-level debugging, and syntax optimized for LLM interpretability. The lexer provides the foundational token stream for Synta's compiler, AI runtime, multi-agent scheduler, and tooling ecosystem.
 
