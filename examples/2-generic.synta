@@ -81,34 +81,12 @@ async fn process_batch(texts: array) -> array {
 }
 
 !> ========================================
-!> AGENT ORCHESTRATION
-!> ========================================
-
-async fn orchestrate() -> void {
-    !> Await all tasks in parallel
-    results =: await all {
-        task1: AICoder.tasks.fix_code("debug this")
-        task2: AICoder.tasks.analyze("analyze this")
-        task3: AICoder.tasks.summarize("sum this")
-    }
-    !> Race condition - first to complete wins
-    fastest =: await race {
-        first: AICoder.tasks.analyze("test")
-        second: AICoder.tasks.fix_code("test")
-    }
-    print("Results: ${results}, Fastest: ${fastest}");
-}
-
-!> ========================================
 !> EVENT-DRIVEN & REACTIVE
 !> ========================================
 
 !> Event listeners
 on AICoder.completed (result) -> store.history.append(result)
 on AICoder.error (err) -> print("Error: ${err}")
-
-!> Reactive watch
-watch store.counter (val) -> if val > 100 print("Counter threshold reached!")
 
 !> ========================================
 !> CONTEXT MANAGEMENT
