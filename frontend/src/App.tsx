@@ -1,14 +1,14 @@
 // App.tsx
 
 import React, { useState, useEffect } from 'react'
-import HomePage from './HomePage'
 import LexicalAnalyzer from './LexicalAnalyzer'
 import SyntacticalAnalyzer from './SyntacticalAnalyzer'
+import './App.css'
 
-type AnalyzerType = 'lexical' | 'syntactical' | null
+type AnalyzerType = 'lexical' | 'syntactical'
 
 function App() {
-  const [selectedAnalyzer, setSelectedAnalyzer] = useState<AnalyzerType>(null)
+  const [activeTab, setActiveTab] = useState<AnalyzerType>('lexical')
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
   // Load saved theme on mount 
@@ -26,54 +26,44 @@ function App() {
     localStorage.setItem('theme', newTheme)
   }
 
-  // Handle analyzer selection
-  const handleSelectAnalyzer = (type: 'lexical' | 'syntactical') => {
-    setSelectedAnalyzer(type)
-  }
-
-  // Handle back to home
-  const handleBackToHome = () => {
-    setSelectedAnalyzer(null)
-  }
-
-  // Show HomePage if no analyzer is selected
-  if (!selectedAnalyzer) {
-    return <HomePage onSelectAnalyzer={handleSelectAnalyzer} />
-  }
-
-  // Render the selected analyzer with shared UI components
   return (
-    <>
-      {/* Theme Toggle Button */}
-      <button 
-        className="theme-toggle" 
-        onClick={toggleTheme}
-        aria-label="Toggle theme"
-      >
-        <div className="theme-toggle-slider">
-          {theme === 'light' ? '☼' : '☾'}
-        </div>
-      </button>
+    <div className="app-container">
+      {/* Header with Logo and Theme Toggle */}
+      <header className="app-header">
+        <div className="logo"></div>
+        <button 
+          className="theme-toggle" 
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+        >
+          <div className="theme-toggle-slider">
+            {theme === 'light' ? '☼' : '☾'}
+          </div>
+        </button>
+      </header>
 
-      {/* Back to Home Button */}
-      <button 
-        className="back-home-btn" 
-        onClick={handleBackToHome}
-        aria-label="Back to home"
-        title="Back to home"
-      >
-        ← HOME
-      </button>
-
-      {/* Analyzer Type Badge */}
-      <div className="analyzer-badge">
-        {selectedAnalyzer === 'lexical' ? '📊 Lexical Analyzer' : '🌲 Syntactical Analyzer'}
+      {/* Tabs */}
+      <div className="tabs">
+        <button 
+          className={`tab ${activeTab === 'lexical' ? 'active' : ''}`}
+          onClick={() => setActiveTab('lexical')}
+        >
+          Lexical
+        </button>
+        <button 
+          className={`tab ${activeTab === 'syntactical' ? 'active' : ''}`}
+          onClick={() => setActiveTab('syntactical')}
+        >
+          Syntax
+        </button>
       </div>
 
-      {/* Render Selected Analyzer */}
-      {selectedAnalyzer === 'lexical' && <LexicalAnalyzer theme={theme} />}
-      {selectedAnalyzer === 'syntactical' && <SyntacticalAnalyzer theme={theme} />}
-    </>
+      {/* Render Active Analyzer */}
+      <div className="analyzer-content">
+        {activeTab === 'lexical' && <LexicalAnalyzer theme={theme} />}
+        {activeTab === 'syntactical' && <SyntacticalAnalyzer theme={theme} />}
+      </div>
+    </div>
   )
 }
 

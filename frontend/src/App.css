@@ -88,15 +88,144 @@ body {
   overflow: hidden; 
 }
 
+/* APP CONTAINER & HEADER */
+.app-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background: var(--panel);
+  border-bottom: 2px solid var(--border);
+  height: 80px;
+  box-sizing: border-box;
+}
+
+.logo {
+  width: 250px;
+  height: 60px;
+  background-image: url('./components/title.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: left center;
+  filter: 
+    drop-shadow(0 0 5px rgba(199, 21, 133, 0.9))
+    drop-shadow(0 0 10px rgba(219, 112, 147, 0.7))
+    drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+  transition: filter var(--transition-base);
+}
+
+[data-theme="dark"] .logo {
+  filter: 
+    drop-shadow(0 0 5px rgba(255, 105, 180, 0.9))
+    drop-shadow(0 0 10px rgba(255, 192, 203, 0.7))
+    drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+}
+
+/* Theme Toggle in Header */
+.app-header .theme-toggle {
+  background: var(--border);
+  border: 2px solid var(--border-hover);
+  width: 64px;
+  height: 32px;
+  border-radius: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  position: relative;
+}
+.app-header .theme-toggle:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent);
+}
+.theme-toggle-slider {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--panel);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all var(--transition-base);
+  position: absolute;
+  left: 3px;
+  color: var(--text);
+  font-weight: bold;
+}
+[data-theme="dark"] .theme-toggle-slider {
+  transform: translateX(32px);
+  background: var(--panel-secondary);
+}
+[data-theme="dark"] .app-header .theme-toggle {
+  background: var(--border-hover);
+  border-color: var(--accent);
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 var(--spacing-xl);
+  background: var(--surface-2);
+  border-bottom: 2px solid var(--border);
+}
+
+.tab {
+  all: unset;
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  border-bottom: 3px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  position: relative;
+}
+
+.tab:hover:not(.active) {
+  color: var(--text);
+  background: var(--accent-light);
+}
+
+.tab.active {
+  color: var(--red-gradient-start);
+  font-weight: 700;
+  border-bottom-color: var(--red-gradient-start);
+  background: var(--panel);
+}
+
+[data-theme="dark"] .tab.active {
+  color: var(--red-gradient-end);
+  border-bottom-color: var(--red-gradient-end);
+}
+
+/* ANALYZER CONTENT */
+.analyzer-content {
+  flex: 1;
+  overflow: hidden;
+}
+
 /* App Grid Layout */
 .app-grid { 
   display: grid; 
   grid-template-columns: 1fr 1fr; 
-  height: 100vh; 
+  height: calc(100vh - 160px);
   gap: var(--spacing-lg); 
   padding: var(--spacing-xl); 
   box-sizing: border-box; 
-  padding-top: calc(var(--spacing-xl) + 80px);
 }
 .pane { 
   background: var(--panel); 
@@ -134,87 +263,6 @@ body {
 /* Utility */
 .flex { display: flex; gap: var(--spacing-sm); }
 .grow { flex: 1; }
-
-
-/* HEADER & LOGO  */
-
-.app-grid::before {
-  content: '';
-  position: fixed;
-  top: var(--spacing-xl);
-  left: var(--spacing-xl);
-  width: 300px;
-  height: 80px;
-  z-index: 100;
-  
-  background-image: url('./components/title.png');
-  
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: left center;
-  
-  /* (Glow Filter) */
-  filter: 
-    drop-shadow(0 0 5px rgba(199, 21, 133, 0.9))
-    drop-shadow(0 0 10px rgba(219, 112, 147, 0.7))
-    drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
-    
-  transition: filter var(--transition-base);
-}
-
-[data-theme="dark"] .app-grid::before {
-    filter: 
-    drop-shadow(0 0 5px rgba(255, 105, 180, 0.9))
-    drop-shadow(0 0 10px rgba(255, 192, 203, 0.7))
-    drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
-}
-
-/* --- Theme Toggle Button --- */
-.theme-toggle {
-  position: fixed;
-  top: calc(var(--spacing-xl) + 25px);
-  right: var(--spacing-xl);
-  z-index: 100;
-  background: var(--border);
-  border: 2px solid var(--border-hover);
-  width: 64px;
-  height: 32px;
-  border-radius: 32px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  padding: 3px;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-base);
-}
-.theme-toggle:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent);
-}
-.theme-toggle-slider {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--panel);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  transition: all var(--transition-base);
-  position: absolute;
-  left: 3px;
-  color: var(--text);
-  font-weight: bold;
-}
-[data-theme="dark"] .theme-toggle-slider {
-  transform: translateX(32px);
-  background: var(--panel-secondary);
-}
-[data-theme="dark"] .theme-toggle {
-  background: var(--border-hover);
-  border-color: var(--accent);
-}
 
 
 /* --- TOOLBAR & VIEW SWITCHER --- */
@@ -603,124 +651,51 @@ tbody tr:hover td {
 [data-theme="dark"] .tok-operator { color: #ffd93d !important; font-weight: 600 !important; }
 [data-theme="dark"] .tok-illegal { background: rgba(255, 107, 107, 0.2) !important; color: #ff6b6b !important; }
 
-/* AdditionalStyles.css - Add these to your existing App.css or import separately */
-
-/* Back to Home Button */
-.back-home-btn {
-  position: fixed;
-  top: calc(var(--spacing-xl) + 25px);
-  left: calc(var(--spacing-xl) + 320px);
-  z-index: 100;
-  padding: 10px 20px;
-  background: var(--panel);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--accent-bright);
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  transition: all var(--transition-base);
-  box-shadow: var(--shadow-sm);
-  text-transform: uppercase;
-}
-
-.back-home-btn:hover {
-  background: var(--accent-light);
-  border-color: var(--accent);
-  transform: translateX(-4px);
-  box-shadow: var(--shadow-md);
-  color: var(--accent-bright);
-}
-
-[data-theme="dark"] .back-home-btn:hover {
-  background: var(--panel-secondary);
-  border-color: var(--accent-hover);
-}
-
-.back-home-btn:active {
-  transform: translateX(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Analyzer Badge */
-.analyzer-badge {
-  position: fixed;
-  top: calc(var(--spacing-xl) + 28px);
-  right: calc(var(--spacing-xl) + 90px);
-  z-index: 100;
-  padding: 8px 18px;
-  background: linear-gradient(135deg, var(--red-gradient-start), var(--red-gradient-end));
-  border: 2px solid var(--border);
-  border-radius: var(--radius-md);
-  color: #ffffff;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  box-shadow: 
-    var(--shadow-md),
-    0 0 20px rgba(199, 21, 133, 0.3);
-  animation: slideDownBadge 0.5s ease-out;
-  text-transform: uppercase;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-@keyframes slideDownBadge {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-[data-theme="dark"] .analyzer-badge {
-  box-shadow: 
-    var(--shadow-md),
-    0 0 30px rgba(255, 105, 180, 0.4);
-}
-
 /* Responsive adjustments */
 @media (max-width: 1200px) {
-  .back-home-btn {
-    left: var(--spacing-xl);
-    top: calc(var(--spacing-xl) + 100px);
-  }
-
-  .analyzer-badge {
-    right: var(--spacing-xl);
-    top: calc(var(--spacing-xl) + 100px);
+  .app-grid {
+    grid-template-columns: 1fr;
+    height: auto;
   }
 }
 
 @media (max-width: 768px) {
-  .back-home-btn {
-    top: calc(var(--spacing-xl) + 80px);
-    left: var(--spacing-lg);
-    padding: 8px 14px;
-    font-size: 11px;
+  .app-header {
+    padding: var(--spacing-md) var(--spacing-lg);
+    height: 60px;
   }
 
-  .analyzer-badge {
-    top: calc(var(--spacing-xl) + 80px);
-    right: var(--spacing-lg);
-    padding: 6px 14px;
-    font-size: 10px;
+  .logo {
+    font-size: 2rem;
+  }
+
+  .tabs {
+    padding: 0 var(--spacing-lg);
+  }
+
+  .tab {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.85rem;
   }
 }
 
 @media (max-width: 480px) {
-  .back-home-btn {
-    font-size: 10px;
-    padding: 6px 12px;
+  .logo {
+    font-size: 1.5rem;
   }
 
-  .analyzer-badge {
-    font-size: 9px;
-    padding: 5px 10px;
+  .app-header .theme-toggle {
+    width: 48px;
+    height: 24px;
+  }
+
+  .theme-toggle-slider {
+    width: 18px;
+    height: 18px;
+    font-size: 0.75rem;
+  }
+
+  [data-theme="dark"] .theme-toggle-slider {
+    transform: translateX(24px);
   }
 }
