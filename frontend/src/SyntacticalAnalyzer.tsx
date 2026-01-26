@@ -9,6 +9,7 @@ interface ParseResult {
   success: boolean
   errors: ParseError[]
   warnings: ParseWarning[]
+  parseTree?: string
 }
 
 interface ParseError {
@@ -24,37 +25,34 @@ interface ParseWarning {
   message: string
 }
 
-type ViewMode = 'summary' | 'errors'
+type ViewMode = 'parse' | 'errors'
 
 interface SyntacticalAnalyzerProps {
   theme: 'light' | 'dark'
 }
 
 const SyntacticalAnalyzer: React.FC<SyntacticalAnalyzerProps> = ({ theme }) => {
-  const [code, setCode] = useState<string>('// Enter your .synta code here\n')
+  const [code, setCode] = useState<string>('// type code here\n')
   const [parseResult, setParseResult] = useState<ParseResult | null>(null)
   const [loading, setLoading] = useState(false)
-  const [viewMode, setViewMode] = useState<ViewMode>('summary')
+  const [viewMode, setViewMode] = useState<ViewMode>('parse')
 
-  // Theme state management removed - now controlled by parent App.tsx
+  // Calculate stats
+  const lineCount = code.split('\n').length
+  const tokenCount = 0 // TODO: Get from tokenizer
+  const parseStatus = !parseResult ? 'Not analyzed' : parseResult.success ? 'Success' : 'Failed'
 
   const handleParse = async () => {
     setLoading(true)
     try {
       // TODO: Replace with actual backend API call
-      // const result = await fetch('/api/parse', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ code })
-      // }).then(res => res.json())
-      
-      // Mock result for now
       await new Promise(resolve => setTimeout(resolve, 800))
       
       const mockResult: ParseResult = {
         success: true,
         errors: [],
-        warnings: []
+        warnings: [],
+        parseTree: 'Parse tree will be displayed here...'
       }
       
       setParseResult(mockResult)
@@ -76,7 +74,7 @@ const SyntacticalAnalyzer: React.FC<SyntacticalAnalyzerProps> = ({ theme }) => {
   }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const file = event.target?.[0]
     if (!file) return
 
     if (!file.name.endsWith('.synta')) {
@@ -93,63 +91,45 @@ const SyntacticalAnalyzer: React.FC<SyntacticalAnalyzerProps> = ({ theme }) => {
     reader.readAsText(file)
   }
 
-  const renderSummaryView = () => {
-    if (!parseResult) return null
-
-    const totalErrors = parseResult.errors.length
-    const totalWarnings = parseResult.warnings.length
-    const syntaxErrors = parseResult.errors.filter(e => e.type === 'syntax').length
-    const semanticErrors = parseResult.errors.filter(e => e.type === 'semantic').length
+  const renderParseView = () => {
+    if (!parseResult) {
+      return (
+        <div className="placeholder">
+          <div className="placeholder-icon">🔍</div>
+          <h3>No Parse Results Yet</h3>
+          <p>Run the analyzer to see syntax parsing results</p>
+        </div>
+      )
+    }
 
     return (
-      <div className="summary-container">
-        <div className="summary-header">
-          <h2>Parse Analysis Summary</h2>
+      <div className="parse-results">
+        <div className="parse-header">
           <div className={`status-badge ${parseResult.success ? 'success' : 'failed'}`}>
             {parseResult.success ? '✓ Parse Successful' : '✕ Parse Failed'}
           </div>
         </div>
-
-        <div className="summary-stats">
-          <div className="stat-card errors">
-            <div className="stat-number">{totalErrors}</div>
-            <div className="stat-label">Total Errors</div>
-            {totalErrors > 0 && (
-              <div className="stat-breakdown">
-                <span>{syntaxErrors} syntax</span>
-                <span>{semanticErrors} semantic</span>
-              </div>
-            )}
-          </div>
-
-          <div className="stat-card warnings">
-            <div className="stat-number">{totalWarnings}</div>
-            <div className="stat-label">Warnings</div>
-          </div>
+        
+        <div className="parse-content">
+          <h3>Parse Tree</h3>
+          <pre className="parse-tree">
+            {parseResult.parseTree || 'No parse tree available'}
+          </pre>
         </div>
-
-        {totalErrors > 0 && (
-          <div className="quick-errors">
-            <h3>Recent Errors</h3>
-            {parseResult.errors.slice(0, 3).map((error, idx) => (
-              <div key={idx} className="quick-error-item">
-                <span className="quick-error-location">[{error.line}:{error.column}]</span>
-                <span className="quick-error-message">{error.message}</span>
-              </div>
-            ))}
-            {totalErrors > 3 && (
-              <div className="more-errors">
-                +{totalErrors - 3} more errors (switch to ERRORS view)
-              </div>
-            )}
-          </div>
-        )}
       </div>
     )
   }
 
   const renderErrorsView = () => {
-    if (!parseResult) return null
+    if (!parseResult) {
+      return (
+        <div className="placeholder">
+          <div className="placeholder-icon">✓</div>
+          <h3>No Errors Yet</h3>
+          <p>Run the analyzer to check for errors</p>
+        </div>
+      )
+    }
 
     return (
       <div className="errors-container">
@@ -171,7 +151,7 @@ const SyntacticalAnalyzer: React.FC<SyntacticalAnalyzerProps> = ({ theme }) => {
                   <div key={idx} className="error-item">
                     <div className="error-header">
                       <span className="error-type">{error.type}</span>
-                      <span className="error-location">[{error.line}:{error.column}]</span>
+                      <span className="error-location">Line {error.line}, Col {error.column}</span>
                     </div>
                     <div className="error-message">{error.message}</div>
                   </div>
@@ -188,7 +168,7 @@ const SyntacticalAnalyzer: React.FC<SyntacticalAnalyzerProps> = ({ theme }) => {
                 {parseResult.warnings.map((warning, idx) => (
                   <div key={idx} className="warning-item">
                     <div className="warning-header">
-                      <span className="warning-location">[{warning.line}:{warning.column}]</span>
+                      <span className="warning-location">Line {warning.line}, Col {warning.column}</span>
                     </div>
                     <div className="warning-message">{warning.message}</div>
                   </div>
@@ -202,12 +182,15 @@ const SyntacticalAnalyzer: React.FC<SyntacticalAnalyzerProps> = ({ theme }) => {
   }
 
   return (
-    <div className="app-grid">
-      <div className="pane left">
-        <div className="toolbar">
-          <div className="flex">
+    <div className="syntactical-analyzer">
+      <div className="app-grid">
+        <div className="pane left">
+          <div className="toolbar">
             <button onClick={handleParse} disabled={loading}>
-              {loading ? 'Parsing...' : '▶ Parse'}
+              {loading ? 'Running...' : '▶ RUN'}
+            </button>
+            <button className="file-btn" title="Save output">
+              📄 PSI
             </button>
             <label className="file-btn-label" title="Upload a .synta file">
               📂 OPEN
@@ -220,52 +203,47 @@ const SyntacticalAnalyzer: React.FC<SyntacticalAnalyzerProps> = ({ theme }) => {
             </label>
           </div>
           
-          <div className="grow" />
-          
-          <div className="view-switch-container">
-            <button
-              className={`view-switch-btn ${viewMode === 'summary' ? 'active' : ''}`}
-              onClick={() => setViewMode('summary')}
-              title="Summary View"
-            >
-              SUMMARY
-            </button>
-            <button
-              className={`view-switch-btn ${viewMode === 'errors' ? 'active' : ''}`}
-              onClick={() => setViewMode('errors')}
-              title="Errors & Warnings"
-            >
-              ERRORS
-            </button>
+          <div className="editor">
+            <EditorPane 
+              code={code} 
+              setCode={setCode} 
+              tokens={[]} 
+              onRun={handleParse}
+              theme={theme}
+            />
           </div>
         </div>
-        
-        <div className="editor">
-          <EditorPane 
-            code={code} 
-            setCode={setCode} 
-            tokens={[]} 
-            onRun={handleParse}
-            theme={theme}
-          />
+
+        <div className="pane right">
+          <div className="result-tabs">
+            <button
+              className={`result-tab ${viewMode === 'errors' ? 'active' : ''}`}
+              onClick={() => setViewMode('errors')}
+            >
+              Errors
+            </button>
+            <button
+              className={`result-tab ${viewMode === 'parse' ? 'active' : ''}`}
+              onClick={() => setViewMode('parse')}
+            >
+              Parse
+            </button>
+          </div>
+          
+          <div className="outputContainer">
+            {viewMode === 'parse' && renderParseView()}
+            {viewMode === 'errors' && renderErrorsView()}
+          </div>
         </div>
       </div>
 
-      <div className="pane right">
-        <div className="outputContainer">
-          {!parseResult ? (
-            <div className="placeholder">
-              <div className="placeholder-icon">🌲</div>
-              <h3>Ready to Parse</h3>
-              <p>Enter code and click "Parse" to analyze syntax</p>
-            </div>
-          ) : (
-            <div className="output-content">
-              {viewMode === 'summary' && renderSummaryView()}
-              {viewMode === 'errors' && renderErrorsView()}
-            </div>
-          )}
-        </div>
+      {/* Status Bar */}
+      <div className="status-bar">
+        <span className="status-item">Lines: {lineCount}</span>
+        <span className="status-separator">|</span>
+        <span className="status-item">Tokens: {tokenCount}</span>
+        <span className="status-separator">|</span>
+        <span className="status-item">Parse: {parseStatus}</span>
       </div>
     </div>
   )
