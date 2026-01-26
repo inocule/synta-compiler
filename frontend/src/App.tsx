@@ -8,7 +8,7 @@ import './App.css'
 type AnalyzerType = 'lexical' | 'syntactical'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<AnalyzerType>('lexical')
+  const [activeTab, setActiveTab] = useState<AnalyzerType>('syntactical')
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
   // Load saved theme on mount 
@@ -45,16 +45,16 @@ function App() {
       {/* Tabs */}
       <div className="tabs">
         <button 
-          className={`tab ${activeTab === 'lexical' ? 'active' : ''}`}
-          onClick={() => setActiveTab('lexical')}
-        >
-          Lexical
-        </button>
-        <button 
           className={`tab ${activeTab === 'syntactical' ? 'active' : ''}`}
           onClick={() => setActiveTab('syntactical')}
         >
           Syntax
+        </button>
+        <button 
+          className={`tab ${activeTab === 'lexical' ? 'active' : ''}`}
+          onClick={() => setActiveTab('lexical')}
+        >
+          Lexical
         </button>
       </div>
 
